@@ -118,6 +118,9 @@ footer{padding:.65rem 2rem;font-size:.68rem;color:rgba(0,0,0,.28);text-align:cen
   <div id="state-loading" class="loading" style="display:none">⏳ Carregando…</div>
   <div id="painel" style="display:none">
     <div class="kcards" id="kcards"></div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:.75rem">
+      <button class="btn btn-p" onclick="abrirModal('')">+ Nova ação</button>
+    </div>
     <div class="tabs">
       <div class="tab active" data-tab="acoes" onclick="trocarTab('acoes')">Ações por produto</div>
       <div class="tab" data-tab="gantt" onclick="trocarTab('gantt')">Cronograma Gantt</div>
@@ -350,6 +353,29 @@ async function init() {
     colaboradores = typeof EQUIPE !== 'undefined' ? EQUIPE.filter(e => niveisExec.includes(e.nivel)) : [];
   }
 
+  // Seed produtos do PRODUTOS_CATALOGO se banco vazio
+  try {
+    const prodsBanco = await dbListarProdutos();
+    if (prodsBanco.length === 0 && typeof PRODUTOS_CATALOGO !== 'undefined') {
+      for (const p of PRODUTOS_CATALOGO) {
+        // Mapear gerente_id do dados.js para id real no banco
+        const gerenteLocal = EQUIPE?.find(e => e.id === p.gerente_id);
+        const gerenteBanco = gerenteLocal
+          ? gerentes.find(g => g.nome === gerenteLocal.nome)
+          : null;
+        try {
+          await dbCriarProduto({
+            nome:           p.nome,
+            tipo:           p.tipo,
+            descricao:      p.descricao || '',
+            coordenacao_id: p.coordenacao_id || '',
+            gerente_id:     gerenteBanco?.id || gerentes[0]?.id || '',
+          });
+        } catch(e) {}
+      }
+    }
+  } catch(e) {}
+
   document.getElementById('state-empty').textContent = 'Selecione o gerente para carregar seus produtos';
   popularSelectGerentes();
   popularModal();
@@ -398,14 +424,10 @@ async function trocarGerente() {
 async function carregar() {
   show('loading');
   try {
+    // Busca ações do gerente e TODOS os produtos disponíveis
     [acoes, produtos] = await Promise.all([
       dbListarAcoes({ gerente_id: gerenteId }),
-      dbListarProdutos(gerenteId).catch(() => {
-        // fallback: produtos do dados.js
-        return typeof PRODUTOS_CATALOGO !== 'undefined'
-          ? PRODUTOS_CATALOGO.filter(p => p.gerente_id === gerenteId)
-          : [];
-      })
+      dbListarProdutos(), // todos, para o gerente poder atrelar
     ]);
     renderPainel();
     show('painel');
@@ -440,8 +462,10 @@ function renderPainel() {
 }
 
 function renderAcoes() {
+  // Mostra só produtos que têm ações deste gerente
+  const prodsComAcoes = produtos.filter(p => acoes.some(a => a.produto_id === p.id));
   let html = '';
-  produtos.forEach(p => {
+  prodsComAcoes.forEach(p => {
     const pa = acoes.filter(a => a.produto_id === p.id);
     const tipo = TIPOS_PRODUTO[p.tipo] || {cor:'#888'};
     const th = pa.reduce((s,a)=>s+(a.horas_estimadas||0),0);
@@ -500,7 +524,7 @@ function renderAcoes() {
            </tbody></table>`}
     </div>`;
   });
-  if (!produtos.length) html = '<div class="empty">Nenhum produto cadastrado para este gerente. Cadastre uma ação e crie um produto novo.</div>';
+  if (!prodsComAcoes.length) html = '<div class="empty">Nenhuma ação cadastrada. Clique em "+ Ação" para começar — escolha um produto existente ou crie um novo.</div>';
   document.getElementById('tab-acoes').innerHTML = html;
 }
 
