@@ -41,11 +41,11 @@ table.t tr:hover td{background:#F8F8F6}
 .empty{text-align:center;padding:2rem;color:var(--cz);font-size:.82rem;background:var(--br);border:1px solid var(--bd);border-radius:10px;margin-bottom:1rem}
 .prod-hdr{font-size:.76rem;font-weight:700;padding:.35rem .7rem;margin-left:.5rem;margin-bottom:.3rem;color:var(--cz)}
 .gantt-wrap{background:var(--br);border:1px solid var(--bd);border-radius:10px;overflow:auto}
-.gh-row{display:grid;grid-template-columns:230px 65px 65px 1fr;border-bottom:1px solid var(--bd)}
+.gh-row{display:grid;grid-template-columns:230px 80px 1fr;border-bottom:1px solid var(--bd)}
 .gc-lbl{padding:.4rem .55rem;font-size:.64rem;font-weight:600;color:var(--cz);text-transform:uppercase}
 .gm-hdr{display:grid;grid-template-columns:repeat(12,1fr)}
 .gm-lbl{font-size:.59rem;color:var(--cz);text-align:center;padding:.32rem 0;border-left:1px solid var(--bd)}
-.g-row{display:grid;grid-template-columns:230px 65px 65px 1fr;border-bottom:1px solid var(--bd);align-items:center}
+.g-row{display:grid;grid-template-columns:230px 80px 1fr;border-bottom:1px solid var(--bd);align-items:center}
 .g-row:hover{background:#F8F8F6}
 .g-nome{padding:.32rem .55rem;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .g-sub{font-size:.59rem;color:var(--cz)}
@@ -84,10 +84,15 @@ footer{padding:.65rem 2rem;font-size:.68rem;color:rgba(0,0,0,.28);text-align:cen
   </div>
 </main>
 <footer>SEGAPE · Diretoria · <a href="index.html" style="color:inherit">Início</a></footer>
-<script src="dados.js"></script>
-<script src="db.js"></script>
+<script src="assets/dados.js"></script>
+<script src="assets/db.js"></script>
 <script>
-let dirId=null, acoes=[], mesAtual=new Date().getMonth()+1;
+let dirId=null, acoes=[], produtos=[], gerentes=[], mesAtual=new Date().getMonth()+1;
+
+function fmtData(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}`;}
+function getMesInicio(a){return a.data_inicio?new Date(a.data_inicio).getMonth()+1:null;}
+function getMesFim(a){return a.data_fim?new Date(a.data_fim).getMonth()+1:null;}
+function getNomeGerente(id){return gerentes.find(g=>g.id===id)?.nome||'—';}
 
 function init(){
   const s=document.getElementById('sel-dir');
@@ -105,33 +110,38 @@ async function trocarDir(){
 async function carregar(){
   show('loading');
   try{
-    const all=await dbListarAcoes();
-    const coords=HIERARQUIA.coordenacoes.filter(c=>c.diretoria_id===dirId).map(c=>c.id);
-    const pids=PRODUTOS_CATALOGO.filter(p=>coords.includes(p.coordenacao_id)).map(p=>p.id);
-    acoes=all.filter(a=>pids.includes(a.produto_id));
+    [acoes, produtos, gerentes] = await Promise.all([
+      dbListarAcoes(),
+      dbListarProdutos(),
+      dbListarGerentes(),
+    ]);
     renderPainel(); show('painel');
   }catch(e){alert('Erro: '+e.message);show('empty');}
 }
 
 function show(s){
-  ['empty','loading'].forEach(id=>document.getElementById('state-'+id).style.display=(id===s)?'block':'none');
+  document.getElementById('state-empty').style.display=(s==='empty')?'block':'none';
+  document.getElementById('state-loading').style.display=(s==='loading')?'block':'none';
   document.getElementById('painel').style.display=(s==='painel')?'block':'none';
 }
 
 function getCoords(){ return HIERARQUIA.coordenacoes.filter(c=>c.diretoria_id===dirId); }
 
+function getProdutosCoord(coordId){ return produtos.filter(p=>p.coordenacao_id===coordId); }
+
 function renderPainel(){
-  const h=acoes.reduce((s,a)=>s+(a.horas_estimadas||0),0);
-  const pend=acoes.filter(a=>a.aprovacao_coord==='aprovado'&&a.aprovacao_dir==='pendente').length;
-  const pct=acoes.length?Math.round(acoes.reduce((s,a)=>s+(a.percentual||0),0)/acoes.length):0;
   const coords=getCoords();
-  const prods=PRODUTOS_CATALOGO.filter(p=>coords.map(c=>c.id).includes(p.coordenacao_id));
+  const pids=coords.flatMap(c=>getProdutosCoord(c.id).map(p=>p.id));
+  const acoesDir=acoes.filter(a=>pids.includes(a.produto_id));
+  const h=acoesDir.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+  const pend=acoesDir.filter(a=>a.aprovacao_coord==='aprovado'&&a.aprovacao_dir==='pendente').length;
+  const pct=acoesDir.length?Math.round(acoesDir.reduce((s,a)=>s+(a.percentual||0),0)/acoesDir.length):0;
   document.getElementById('kcards').innerHTML=`
-    <div class="kc"><div class="kc-n">${prods.length}</div><div class="kc-l">Produtos</div></div>
-    <div class="kc"><div class="kc-n">${acoes.length}</div><div class="kc-l">Ações</div></div>
+    <div class="kc"><div class="kc-n">${pids.length}</div><div class="kc-l">Produtos</div></div>
+    <div class="kc"><div class="kc-n">${acoesDir.length}</div><div class="kc-l">Ações</div></div>
     <div class="kc"><div class="kc-n">${h}h</div><div class="kc-l">Horas estimadas</div></div>
     <div class="kc ${pend>0?'alert':''}"><div class="kc-n">${pend}</div><div class="kc-l">Ag. aprovação dir.</div></div>
-    <div class="kc"><div class="kc-n">${acoes.filter(a=>a.status==='concluido').length}</div><div class="kc-l">Concluídas</div></div>
+    <div class="kc"><div class="kc-n">${acoesDir.filter(a=>a.status==='concluido').length}</div><div class="kc-l">Concluídas</div></div>
     <div class="kc"><div class="kc-n">${pct}%</div><div class="kc-l">Avanço médio</div></div>
   `;
   renderCoords(); renderAprov();
@@ -142,8 +152,9 @@ function renderCoords(){
   const coords=getCoords();
   let html='';
   coords.forEach(c=>{
-    const prods=PRODUTOS_CATALOGO.filter(p=>p.coordenacao_id===c.id);
-    const ca=acoes.filter(a=>prods.map(p=>p.id).includes(a.produto_id));
+    const prods=getProdutosCoord(c.id);
+    const pids=prods.map(p=>p.id);
+    const ca=acoes.filter(a=>pids.includes(a.produto_id));
     const h=ca.reduce((s,a)=>s+(a.horas_estimadas||0),0);
     const pct=ca.length?Math.round(ca.reduce((s,a)=>s+(a.percentual||0),0)/ca.length):0;
     html+=`<div class="coord-card">
@@ -159,18 +170,17 @@ function renderCoords(){
         <div><div class="cs-n">${pct}%</div><div class="cs-l">avanço</div></div>
       </div>
     </div>`;
-
     prods.forEach(p=>{
       const pa=ca.filter(a=>a.produto_id===p.id);
       if(!pa.length) return;
       const tipo=TIPOS_PRODUTO[p.tipo]||{cor:'#888'};
       html+=`<div class="prod-hdr" style="color:${tipo.cor}">&nbsp;&nbsp;${p.nome} ${tipoBadge(p.tipo)}</div>
       <table class="t"><thead><tr>
-        <th>Ação</th><th>Gerente</th><th>Executor</th><th>Fase</th><th>Cx</th>
+        <th>Ação</th><th>Gerente</th><th>Fase</th><th>Cx</th>
         <th>Período</th><th>Horas</th><th>Avanço</th><th>Status</th><th>Coord.</th><th>Dir.</th>
       </tr></thead><tbody>
       ${pa.map(a=>{
-        const g=getMembroEquipe(a.gerente_id),ex=a.executor_id?getMembroEquipe(a.executor_id):null;
+        const g=getNomeGerente(a.gerente_id);
         const apC=a.aprovacao_coord==='aprovado'?`<span style="color:var(--verde);font-size:.7rem">✓</span>`:`<span style="color:var(--dou);font-size:.7rem">pend.</span>`;
         const apD=a.aprovacao_dir==='aprovado'
           ?`<span style="color:var(--verde);font-size:.7rem">✓</span>`
@@ -178,11 +188,10 @@ function renderCoords(){
             ?`<button class="btn btn-ok" style="padding:.18rem .45rem;font-size:.68rem" onclick="aprovarDir('${a.id}')">✓</button>`
             :`<span style="font-size:.68rem;color:var(--cz)">ag.coord</span>`;
         return `<tr>
-          <td style="font-weight:500">${a.titulo}</td>
-          <td style="font-size:.73rem">${g?.nome.split(' ')[0]||'—'}</td>
-          <td style="font-size:.73rem">${ex?ex.nome.split(' ').slice(0,2).join(' '):'—'}</td>
+          <td style="font-weight:500">${a.titulo}${a.observacao?`<div style="font-size:.68rem;color:var(--dou)">💬 ${a.observacao}</div>`:''}</td>
+          <td style="font-size:.73rem">${g.split(' ')[0]}</td>
           <td>${faseBadge(a.fase)}</td><td>${complexBadge(a.complexidade)}</td>
-          <td style="font-size:.73rem;white-space:nowrap">${mesToNome(a.mes_inicio)}→${mesToNome(a.mes_fim)}</td>
+          <td style="font-size:.73rem;white-space:nowrap">${a.data_inicio?fmtData(a.data_inicio):'—'}→${a.data_fim?fmtData(a.data_fim):'—'}</td>
           <td style="font-weight:600;color:var(--azul)">${a.horas_estimadas||0}h</td>
           <td><div style="display:flex;align-items:center;gap:3px">
             <div class="pbar"><div class="pfill" style="width:${a.percentual||0}%"></div></div>
@@ -207,52 +216,49 @@ async function aprovarDir(id){
 function renderGantt(){
   const coords=getCoords();
   let html=`<div class="gh-row">
-    <div class="gc-lbl">Ação</div><div class="gc-lbl">Gerente</div><div class="gc-lbl">Horas</div>
+    <div class="gc-lbl">Ação</div><div class="gc-lbl">Gerente</div>
     <div class="gm-hdr">${MESES.map(m=>`<div class="gm-lbl">${m}</div>`).join('')}</div>
   </div>`;
   coords.forEach(c=>{
-    const prods=PRODUTOS_CATALOGO.filter(p=>p.coordenacao_id===c.id);
-    prods.forEach(p=>{
+    getProdutosCoord(c.id).forEach(p=>{
       const pa=acoes.filter(a=>a.produto_id===p.id);
       if(!pa.length) return;
       const tipo=TIPOS_PRODUTO[p.tipo]||{cor:'#888'};
       html+=`<div class="g-grp" style="color:${tipo.cor}">${c.sigla} · ${p.nome}</div>`;
       pa.forEach(a=>{
-        const g=getMembroEquipe(a.gerente_id),cor=FASES[a.fase]?.cor||'#888';
+        const g=getNomeGerente(a.gerente_id);
+        const cor=FASES[a.fase]?.cor||'#888';
+        const mi=getMesInicio(a),mf=getMesFim(a);
         const cells=MESES.map((_,i)=>{
-          const m=i+1,at=m>=a.mes_inicio&&m<=a.mes_fim;
+          const m=i+1,at=mi&&mf&&m>=mi&&m<=mf;
           return `<div class="g-cell" style="${at?`background:${cor}`:''};${m===mesAtual?'box-shadow:inset 0 0 0 1px var(--dou)':''}"></div>`;
         }).join('');
         html+=`<div class="g-row">
           <div class="g-nome">${a.titulo}<div class="g-sub">${COMPLEXIDADE[a.complexidade]?.label||''}</div></div>
-          <div class="g-lbl">${g?.nome.split(' ')[0]||'—'}</div>
-          <div class="g-lbl" style="font-weight:700;color:var(--azul)">${a.horas_estimadas||0}h</div>
+          <div class="g-lbl">${g.split(' ')[0]}<br><span style="font-weight:700;color:var(--azul)">${a.horas_estimadas||0}h</span></div>
           <div class="g-grid">${cells}</div>
         </div>`;
       });
     });
   });
-  document.getElementById('gantt').innerHTML=html;
+  document.getElementById('gantt').innerHTML=html||'<div style="padding:2rem;text-align:center;color:var(--cz)">Nenhuma ação cadastrada</div>';
 }
 
 function renderAprov(){
-  const pend=acoes.filter(a=>a.aprovacao_coord==='aprovado'&&a.aprovacao_dir==='pendente');
+  const coords=getCoords();
+  const pids=coords.flatMap(c=>getProdutosCoord(c.id).map(p=>p.id));
+  const pend=acoes.filter(a=>pids.includes(a.produto_id)&&a.aprovacao_coord==='aprovado'&&a.aprovacao_dir==='pendente');
   if(!pend.length){document.getElementById('aprov-list').innerHTML='<div class="empty">Nenhuma ação aguardando aprovação ✓</div>';return;}
   let html=`<div style="font-size:.8rem;color:var(--cz);margin-bottom:.5rem">${pend.length} ação(ões) validadas pela coordenação aguardando aprovação da diretoria</div>
-  <table class="t"><thead><tr><th>Ação</th><th>Produto</th><th>Gerente</th><th>Executor</th><th>Horas</th><th>Cx</th><th>Período</th><th>Aprovar</th></tr></thead><tbody>
-  ${pend.map(a=>{
-    const p=getProduto(a.produto_id),g=getMembroEquipe(a.gerente_id),ex=a.executor_id?getMembroEquipe(a.executor_id):null;
-    return `<tr>
-      <td style="font-weight:500">${a.titulo}</td>
-      <td style="font-size:.73rem">${p?.nome||'—'}</td>
-      <td style="font-size:.73rem">${g?.nome.split(' ')[0]||'—'}</td>
-      <td style="font-size:.73rem">${ex?ex.nome.split(' ').slice(0,2).join(' '):'—'}</td>
-      <td style="font-weight:600;color:var(--azul)">${a.horas_estimadas||0}h</td>
-      <td>${complexBadge(a.complexidade)}</td>
-      <td style="font-size:.73rem;white-space:nowrap">${mesToNome(a.mes_inicio)}→${mesToNome(a.mes_fim)}</td>
-      <td><button class="btn btn-ok" onclick="aprovarDir('${a.id}')">✓ Aprovar</button></td>
-    </tr>`;
-  }).join('')}
+  <table class="t"><thead><tr><th>Ação</th><th>Produto</th><th>Gerente</th><th>Horas</th><th>Período</th><th>Aprovar</th></tr></thead><tbody>
+  ${pend.map(a=>`<tr>
+    <td style="font-weight:500">${a.titulo}</td>
+    <td style="font-size:.73rem">${produtos.find(p=>p.id===a.produto_id)?.nome||'—'}</td>
+    <td style="font-size:.73rem">${getNomeGerente(a.gerente_id).split(' ')[0]}</td>
+    <td style="font-weight:600;color:var(--azul)">${a.horas_estimadas||0}h</td>
+    <td style="font-size:.73rem;white-space:nowrap">${a.data_inicio?fmtData(a.data_inicio):'—'}→${a.data_fim?fmtData(a.data_fim):'—'}</td>
+    <td><button class="btn btn-ok" onclick="aprovarDir('${a.id}')">✓ Aprovar</button></td>
+  </tr>`).join('')}
   </tbody></table>`;
   document.getElementById('aprov-list').innerHTML=html;
 }
