@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEGAPE — Gerente de Projeto</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--azul:#1B3A6B;--azm:#2E5CA8;--azc:#5B8DD9;--verde:#1D7A55;--dou:#C8922A;--douc:#E8B84B;--ce:#2C2C2C;--cz:#5F5F5F;--cl:#F4F3EF;--br:#FAFAF8;--bd:rgba(0,0,0,0.09);--red:#B34A2A}
+body{font-family:'DM Sans',sans-serif;background:var(--cl);min-height:100vh;display:flex;flex-direction:column}
+header{background:var(--azul);padding:.9rem 2rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.sigla{font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;color:var(--douc)}
+.sep{width:1px;height:28px;background:rgba(255,255,255,.2);margin:0 .5rem}
+.subt{font-size:.68rem;color:rgba(255,255,255,.5)}
+.nav-back{font-size:.72rem;color:rgba(255,255,255,.55);text-decoration:none}
+.hright{margin-left:auto;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+select.sel{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:white;font-size:.78rem;padding:.32rem .6rem;border-radius:6px;cursor:pointer}
+select.sel option{background:#1B3A6B}
+main{flex:1;padding:1.25rem 2rem;max-width:1400px;margin:0 auto;width:100%}
+.tabs{display:flex;border-bottom:2px solid var(--bd);margin-bottom:1.25rem}
+.tab{padding:.55rem 1.1rem;font-size:.8rem;font-weight:500;color:var(--cz);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab.active{color:var(--azul);border-color:var(--azul);font-weight:600}
+.kcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.6rem;margin-bottom:1.25rem}
+.kc{background:var(--br);border:1px solid var(--bd);border-radius:10px;padding:.8rem .9rem}
+.kc-n{font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;color:var(--azul)}
+.kc-l{font-size:.67rem;color:var(--cz);text-transform:uppercase;margin-top:2px}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.btn{padding:.38rem .85rem;border-radius:7px;font-size:.78rem;font-weight:500;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:.3rem;transition:all .15s}
+.btn-p{background:var(--azul);color:white}.btn-p:hover{background:var(--azm)}
+.btn-o{background:transparent;border:1.5px solid var(--bd);color:var(--ce)}.btn-o:hover{border-color:var(--azm)}
+.btn-pdf{background:#E0F5ED;color:var(--verde);border:1px solid #1D7A5540}
+.btn-del{background:transparent;border:1px solid #ddd;color:var(--red);font-size:.7rem;padding:.2rem .5rem}
+.btn-edit{background:transparent;border:1.5px solid var(--bd);color:var(--cz);font-size:.7rem;padding:.2rem .5rem}
+.btn-sm{padding:.25rem .6rem;font-size:.72rem;border-radius:6px}
+table.t{width:100%;border-collapse:collapse;background:var(--br);border-radius:10px;overflow:hidden;border:1px solid var(--bd);font-size:.8rem;margin-bottom:1.5rem}
+table.t th{background:#F0F2F6;padding:.5rem .75rem;text-align:left;font-size:.67rem;font-weight:600;color:var(--cz);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--bd)}
+table.t td{padding:.6rem .75rem;border-bottom:1px solid var(--bd);vertical-align:middle}
+table.t tr:last-child td{border-bottom:none}
+table.t tr:hover td{background:#F8F8F6}
+.pbar{width:72px;height:7px;background:#E5E5E0;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:3px}
+.pfill{height:100%;border-radius:4px;background:var(--azm)}
+.empty{text-align:center;padding:2rem;color:var(--cz);font-size:.82rem;background:var(--br);border:1px solid var(--bd);border-radius:10px;margin-bottom:1rem}
+.prod-block{margin-bottom:1.75rem}
+.prod-label{display:flex;align-items:center;gap:.45rem;margin-bottom:.3rem}
+.prod-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.prod-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:var(--ce)}
+.prod-meta{font-size:.72rem;color:var(--cz);margin-left:1.1rem;margin-bottom:.4rem}
+/* Gantt */
+.gantt-wrap{background:var(--br);border:1px solid var(--bd);border-radius:10px;overflow:auto}
+.gh-row{display:grid;grid-template-columns:220px 1fr;border-bottom:1px solid var(--bd)}
+.gc-label{padding:.45rem .65rem;font-size:.66rem;font-weight:600;color:var(--cz);text-transform:uppercase}
+.gm-hdr{display:grid;grid-template-columns:repeat(12,1fr)}
+.gm-lbl{font-size:.61rem;color:var(--cz);text-align:center;padding:.35rem 0;border-left:1px solid var(--bd)}
+.g-row{display:grid;grid-template-columns:220px 1fr;border-bottom:1px solid var(--bd);align-items:center}
+.g-row:last-child{border-bottom:none}
+.g-row:hover{background:#F8F8F6}
+.g-nome{padding:.35rem .65rem;font-size:.74rem;color:var(--ce);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-sub{font-size:.61rem;color:var(--cz)}
+.g-grid{display:grid;grid-template-columns:repeat(12,1fr)}
+.g-cell{height:17px;border-left:1px solid var(--bd)}
+.g-group{background:#F0F2F6;padding:.35rem .65rem;font-size:.73rem;font-weight:700;border-bottom:1px solid var(--bd)}
+/* Executores */
+.exec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.exec-card{background:var(--br);border:1px solid var(--bd);border-radius:10px;padding:1rem}
+.exec-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:.6rem}
+.exec-h{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--azul)}
+.exec-item{display:flex;justify-content:space-between;align-items:center;padding:.35rem 0;border-top:1px solid var(--bd);font-size:.74rem}
+/* Tags de colaboradores */
+.tags{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.4rem}
+.tag{display:inline-flex;align-items:center;gap:.25rem;background:#E8EEFA;color:var(--azm);border:1px solid #2E5CA840;border-radius:20px;font-size:.7rem;padding:.15rem .5rem}
+.tag-x{cursor:pointer;font-size:.8rem;color:var(--azm);line-height:1}
+.tag-x:hover{color:var(--red)}
+/* Colaboradores multi-select */
+.colab-search{width:100%;border:1.5px solid var(--bd);border-radius:7px;padding:.4rem .65rem;font-size:.82rem;margin-bottom:.4rem}
+.colab-list{max-height:140px;overflow-y:auto;border:1.5px solid var(--bd);border-radius:7px;background:white}
+.colab-item{display:flex;align-items:center;gap:.5rem;padding:.35rem .65rem;font-size:.8rem;cursor:pointer;border-bottom:1px solid var(--bd)}
+.colab-item:last-child{border-bottom:none}
+.colab-item:hover{background:#F0F2F6}
+.colab-item input[type=checkbox]{accent-color:var(--azm)}
+/* Modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:center;justify-content:center;padding:1rem}
+.overlay.open{display:flex}
+.modal{background:var(--br);border-radius:12px;padding:1.75rem;width:100%;max-width:600px;max-height:92vh;overflow-y:auto}
+.m-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--azul);margin-bottom:1.1rem}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+.fgrid .full{grid-column:1/-1}
+.field{display:flex;flex-direction:column;gap:.2rem}
+.field label{font-size:.7rem;font-weight:600;color:var(--cz);text-transform:uppercase;letter-spacing:.04em}
+.field input,.field select,.field textarea{width:100%;border:1.5px solid var(--bd);border-radius:7px;padding:.45rem .65rem;font-size:.82rem;font-family:'DM Sans',sans-serif;background:white;color:var(--ce)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--azc)}
+.field textarea{resize:vertical;min-height:55px}
+.mfooter{display:flex;gap:.45rem;justify-content:flex-end;margin-top:1.2rem}
+.loading{text-align:center;padding:3rem;color:var(--cz)}
+/* Admin tabs */
+.admin-section{background:var(--br);border:1px solid var(--bd);border-radius:10px;padding:1.25rem;margin-bottom:1rem}
+.admin-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--azul);margin-bottom:.75rem;display:flex;justify-content:space-between;align-items:center}
+footer{padding:.65rem 2rem;font-size:.68rem;color:rgba(0,0,0,.28);text-align:center;border-top:1px solid var(--bd)}
+</style>
+</head>
+<body>
+<header>
+  <a class="nav-back" href="index.html">← Início</a>
+  <div class="sep"></div>
+  <div class="sigla">SEGAPE</div>
+  <div class="sep"></div>
+  <div class="subt">Gerente · Planejamento de ações por produto</div>
+  <div class="hright">
+    <select class="sel" id="sel-gerente" onchange="trocarGerente()">
+      <option value="">— Selecione o gerente —</option>
+    </select>
+    <button class="btn btn-o" style="font-size:.72rem;color:white;border-color:rgba(255,255,255,.3)" onclick="abrirAdmin()">⚙ Admin</button>
+  </div>
+</header>
+
+<main>
+  <div id="state-empty" class="loading">Selecione o gerente para carregar seus produtos</div>
+  <div id="state-loading" class="loading" style="display:none">⏳ Carregando…</div>
+  <div id="painel" style="display:none">
+    <div class="kcards" id="kcards"></div>
+    <div class="tabs">
+      <div class="tab active" data-tab="acoes" onclick="trocarTab('acoes')">Ações por produto</div>
+      <div class="tab" data-tab="gantt" onclick="trocarTab('gantt')">Cronograma Gantt</div>
+      <div class="tab" data-tab="exec" onclick="trocarTab('exec')">Carga por colaborador</div>
+    </div>
+    <div id="tab-acoes"></div>
+    <div id="tab-gantt" style="display:none"><div class="gantt-wrap" id="gantt"></div></div>
+    <div id="tab-exec" style="display:none"><div class="exec-grid" id="exec-grid"></div></div>
+  </div>
+</main>
+
+<!-- Modal: Nova/Editar Ação -->
+<div class="overlay" id="overlay" onclick="fecharFora(event)">
+  <div class="modal">
+    <div class="m-title" id="m-title">Nova ação</div>
+    <div class="fgrid">
+      <!-- Produto -->
+      <div class="field full">
+        <label>Produto *</label>
+        <div style="display:flex;gap:.4rem">
+          <select id="f-produto" style="flex:1"></select>
+          <button class="btn btn-o btn-sm" onclick="abrirNovoProduto()">+ Novo</button>
+        </div>
+      </div>
+      <!-- Título -->
+      <div class="field full"><label>Título da ação *</label>
+        <input id="f-titulo" type="text" placeholder="Ex: Levantar indicadores de matrícula 2025">
+      </div>
+      <!-- Descrição -->
+      <div class="field full"><label>Descrição</label>
+        <textarea id="f-descricao" placeholder="Detalhe o que será feito…"></textarea>
+      </div>
+      <!-- Colaboradores -->
+      <div class="field full">
+        <label>Colaboradores</label>
+        <input class="colab-search" id="colab-search" type="text" placeholder="Buscar colaborador…" oninput="filtrarColabs()">
+        <div class="colab-list" id="colab-list"></div>
+        <div class="tags" id="colab-tags"></div>
+      </div>
+      <!-- Datas -->
+      <div class="field"><label>Data início *</label>
+        <input id="f-data-inicio" type="date">
+      </div>
+      <div class="field"><label>Data fim *</label>
+        <input id="f-data-fim" type="date">
+      </div>
+      <!-- Horas / Complexidade -->
+      <div class="field"><label>Horas estimadas</label>
+        <input id="f-horas" type="number" min="1" max="999" placeholder="Ex: 16">
+      </div>
+      <div class="field"><label>Complexidade</label>
+        <select id="f-cx"></select>
+      </div>
+      <!-- Fase / Prioridade -->
+      <div class="field"><label>Fase</label>
+        <select id="f-fase"></select>
+      </div>
+      <div class="field"><label>Prioridade</label>
+        <select id="f-prio">
+          <option value="baixa">Baixa</option>
+          <option value="media" selected>Média</option>
+          <option value="alta">Alta</option>
+        </select>
+      </div>
+      <!-- Status / Avanço -->
+      <div class="field"><label>Status</label>
+        <select id="f-status"></select>
+      </div>
+      <div class="field"><label>% Avanço</label>
+        <input id="f-pct" type="number" min="0" max="100" value="0">
+      </div>
+      <!-- Observação -->
+      <div class="field full"><label>Observação</label>
+        <textarea id="f-obs" placeholder="Observações adicionais, pendências, contexto…" style="min-height:65px"></textarea>
+      </div>
+    </div>
+    <div class="mfooter">
+      <button class="btn btn-o" onclick="fechar()">Cancelar</button>
+      <button class="btn btn-p" onclick="salvar()">Salvar ação</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Novo Produto -->
+<div class="overlay" id="overlay-produto" onclick="fecharFora2(event)">
+  <div class="modal" style="max-width:420px">
+    <div class="m-title">Novo produto</div>
+    <div style="display:flex;flex-direction:column;gap:.65rem">
+      <div class="field"><label>Nome do produto *</label>
+        <input id="np-nome" type="text" placeholder="Ex: Painel Educação Básica">
+      </div>
+      <div class="field"><label>Tipo</label>
+        <select id="np-tipo">
+          <option value="painel_publico">Painel Educadados</option>
+          <option value="painel_estrategico">Painel Estratégico</option>
+          <option value="painel_indicadores">Painel de Indicadores</option>
+          <option value="relatorio_personalizado">Relatório Personalizado</option>
+        </select>
+      </div>
+      <div class="field"><label>Descrição</label>
+        <textarea id="np-desc" placeholder="Descreva o produto…" style="min-height:55px"></textarea>
+      </div>
+    </div>
+    <div class="mfooter">
+      <button class="btn btn-o" onclick="fecharNovoProduto()">Cancelar</button>
+      <button class="btn btn-p" onclick="salvarNovoProduto()">Criar produto</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Admin -->
+<div class="overlay" id="overlay-admin" onclick="fecharAdmin(event)">
+  <div class="modal" style="max-width:680px">
+    <div class="m-title">⚙ Administração</div>
+    <div class="tabs" style="margin-bottom:1rem">
+      <div class="tab active" data-tab="adm-gerentes" onclick="adminTab('adm-gerentes')">Gerentes</div>
+      <div class="tab" data-tab="adm-colabs" onclick="adminTab('adm-colabs')">Colaboradores</div>
+    </div>
+
+    <!-- Gerentes -->
+    <div id="adm-gerentes">
+      <div class="admin-title">
+        <span>Gerentes ativos</span>
+        <button class="btn btn-p btn-sm" onclick="abrirNovoGerente()">+ Adicionar gerente</button>
+      </div>
+      <div id="adm-gerentes-lista"></div>
+      <!-- Form novo gerente -->
+      <div id="form-gerente" style="display:none;background:#F0F2F6;border-radius:8px;padding:1rem;margin-top:.75rem">
+        <div class="fgrid">
+          <div class="field full"><label>Nome completo *</label><input id="ng-nome" type="text"></div>
+          <div class="field"><label>Área</label><input id="ng-area" type="text" placeholder="Ex: DMAPE/SEGAPE"></div>
+          <div class="field"><label>Vínculo</label>
+            <select id="ng-vinculo">
+              <option>Servidor</option><option>Consultor</option><option>Bolsista</option>
+              <option>Terceirizado</option><option>Estagiário</option>
+            </select>
+          </div>
+          <div class="field full"><label>Sala</label><input id="ng-sala" type="text" placeholder="Ex: 8º Andar, Sala 813"></div>
+        </div>
+        <div class="mfooter" style="margin-top:.75rem">
+          <button class="btn btn-o btn-sm" onclick="fecharNovoGerente()">Cancelar</button>
+          <button class="btn btn-p btn-sm" onclick="salvarNovoGerente()">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Colaboradores -->
+    <div id="adm-colabs" style="display:none">
+      <div class="admin-title">
+        <span>Colaboradores ativos</span>
+        <button class="btn btn-p btn-sm" onclick="abrirNovoColab()">+ Adicionar colaborador</button>
+      </div>
+      <div id="adm-colabs-lista"></div>
+      <!-- Form novo colaborador -->
+      <div id="form-colab" style="display:none;background:#F0F2F6;border-radius:8px;padding:1rem;margin-top:.75rem">
+        <div class="fgrid">
+          <div class="field full"><label>Nome completo *</label><input id="nc-nome" type="text"></div>
+          <div class="field"><label>Área</label><input id="nc-area" type="text" placeholder="Ex: DMAPE/SEGAPE"></div>
+          <div class="field"><label>Vínculo</label>
+            <select id="nc-vinculo">
+              <option>Servidor</option><option>Consultor</option><option>Bolsista</option>
+              <option>Terceirizado</option><option>Estagiário</option>
+            </select>
+          </div>
+          <div class="field full"><label>Sala</label><input id="nc-sala" type="text" placeholder="Ex: 8º Andar, Sala 813"></div>
+        </div>
+        <div class="mfooter" style="margin-top:.75rem">
+          <button class="btn btn-o btn-sm" onclick="fecharNovoColab()">Cancelar</button>
+          <button class="btn btn-p btn-sm" onclick="salvarNovoColab()">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mfooter"><button class="btn btn-o" onclick="document.getElementById('overlay-admin').classList.remove('open')">Fechar</button></div>
+  </div>
+</div>
+
+<footer>SEGAPE · Planejamento Educadados · <a href="index.html" style="color:inherit">Início</a></footer>
+
+<script src="assets/dados.js"></script>
+<script src="assets/db.js"></script>
+<script>
+let gerenteId = null;
+let acoes = [];
+let produtos = [];
+let colaboradores = [];
+let gerentes = [];
+let editId = null;
+let tabAtiva = 'acoes';
+let colabsSelecionados = []; // ids selecionados no modal
+let mesAtual = new Date().getMonth() + 1;
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  try {
+    // Tenta carregar gerentes do banco; cai no dados.js se falhar
+    gerentes = await dbListarGerentes();
+  } catch(e) {
+    gerentes = typeof EQUIPE !== 'undefined'
+      ? EQUIPE.filter(e => e.nivel === 'gerente')
+      : [];
+  }
+  try {
+    colaboradores = await dbListarColaboradores();
+  } catch(e) {
+    colaboradores = typeof EQUIPE !== 'undefined'
+      ? EQUIPE.filter(e => ['gerente','servidor','consultor','bolsista','terceirizado','estagiario'].includes(e.nivel))
+      : [];
+  }
+  popularSelectGerentes();
+  popularModal();
+}
+
+function popularSelectGerentes() {
+  const sel = document.getElementById('sel-gerente');
+  sel.innerHTML = '<option value="">— Selecione o gerente —</option>';
+  gerentes.sort((a,b) => a.nome.localeCompare(b.nome,'pt-BR')).forEach(g => {
+    sel.insertAdjacentHTML('beforeend', `<option value="${g.id}">${g.nome}</option>`);
+  });
+}
+
+function popularModal() {
+  // Fases
+  const fsel = document.getElementById('f-fase');
+  fsel.innerHTML = '';
+  Object.entries(FASES).forEach(([k,v]) =>
+    fsel.insertAdjacentHTML('beforeend', `<option value="${k}">${v.label}</option>`));
+  // Complexidade
+  const csel = document.getElementById('f-cx');
+  csel.innerHTML = '';
+  Object.entries(COMPLEXIDADE).forEach(([k,v]) =>
+    csel.insertAdjacentHTML('beforeend', `<option value="${k}">${v.label}</option>`));
+  // Status
+  const ssel = document.getElementById('f-status');
+  ssel.innerHTML = '';
+  Object.entries(STATUS_LABELS).forEach(([k,v]) =>
+    ssel.insertAdjacentHTML('beforeend', `<option value="${k}">${v.label}</option>`));
+  // Data padrão
+  const hoje = new Date().toISOString().split('T')[0];
+  document.getElementById('f-data-inicio').value = hoje;
+  document.getElementById('f-data-fim').value = hoje;
+}
+
+// ============================================================
+// TROCA GERENTE
+// ============================================================
+async function trocarGerente() {
+  gerenteId = document.getElementById('sel-gerente').value;
+  if (!gerenteId) { show('empty'); return; }
+  await carregar();
+  dbEscutar(() => carregar());
+}
+
+async function carregar() {
+  show('loading');
+  try {
+    [acoes, produtos] = await Promise.all([
+      dbListarAcoes({ gerente_id: gerenteId }),
+      dbListarProdutos(gerenteId).catch(() => {
+        // fallback: produtos do dados.js
+        return typeof PRODUTOS_CATALOGO !== 'undefined'
+          ? PRODUTOS_CATALOGO.filter(p => p.gerente_id === gerenteId)
+          : [];
+      })
+    ]);
+    renderPainel();
+    show('painel');
+  } catch(e) {
+    alert('Erro ao carregar: ' + e.message);
+    show('empty');
+  }
+}
+
+function show(s) {
+  document.getElementById('state-empty').style.display   = (s === 'empty'   ? 'block' : 'none');
+  document.getElementById('state-loading').style.display = (s === 'loading' ? 'block' : 'none');
+  document.getElementById('painel').style.display        = (s === 'painel'  ? 'block' : 'none');
+}
+
+// ============================================================
+// RENDER PAINEL
+// ============================================================
+function renderPainel() {
+  const h = acoes.reduce((s,a) => s + (a.horas_estimadas||0), 0);
+  const pct = acoes.length ? Math.round(acoes.reduce((s,a)=>s+(a.percentual||0),0)/acoes.length) : 0;
+  document.getElementById('kcards').innerHTML = `
+    <div class="kc"><div class="kc-n">${produtos.length}</div><div class="kc-l">Produtos</div></div>
+    <div class="kc"><div class="kc-n">${acoes.length}</div><div class="kc-l">Ações</div></div>
+    <div class="kc"><div class="kc-n">${h}h</div><div class="kc-l">Horas estimadas</div></div>
+    <div class="kc"><div class="kc-n">${acoes.filter(a=>a.status==='concluido').length}</div><div class="kc-l">Concluídas</div></div>
+    <div class="kc"><div class="kc-n">${pct}%</div><div class="kc-l">Avanço médio</div></div>
+  `;
+  if (tabAtiva === 'acoes') renderAcoes();
+  if (tabAtiva === 'gantt') renderGantt();
+  if (tabAtiva === 'exec')  renderExec();
+}
+
+function renderAcoes() {
+  let html = '';
+  produtos.forEach(p => {
+    const pa = acoes.filter(a => a.produto_id === p.id);
+    const tipo = TIPOS_PRODUTO[p.tipo] || {cor:'#888'};
+    const th = pa.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+    html += `<div class="prod-block">
+      <div class="sec-hdr">
+        <div>
+          <div class="prod-label">
+            <div class="prod-dot" style="background:${tipo.cor}"></div>
+            <span class="prod-name">${p.nome}</span>
+            ${tipoBadge(p.tipo)}
+          </div>
+          <div class="prod-meta">${p.descricao||''} · ${pa.length} ação(ões) · ${th}h estimadas</div>
+        </div>
+        <div style="display:flex;gap:.4rem">
+          <button class="btn btn-pdf" onclick="gerarPDFProduto('${p.id}')">📄 PDF</button>
+          <button class="btn btn-p" onclick="abrirModal('${p.id}')">+ Ação</button>
+        </div>
+      </div>
+      ${pa.length === 0
+        ? `<div class="empty">Nenhuma ação cadastrada — clique em "+ Ação" para começar</div>`
+        : `<table class="t"><thead><tr>
+            <th>Ação</th><th>Colaboradores</th><th>Fase</th><th>Complexidade</th>
+            <th>Período</th><th>Horas</th><th>Avanço</th><th>Status</th><th></th>
+           </tr></thead><tbody>
+           ${pa.map(a => {
+             const colabs = (a.executores_ids || []).map(id => colaboradores.find(c=>c.id===id)).filter(Boolean);
+             return `<tr>
+               <td>
+                 <div style="font-weight:500">${a.titulo}</div>
+                 ${a.descricao?`<div style="font-size:.7rem;color:var(--cz)">${a.descricao}</div>`:''}
+                 ${a.observacao?`<div style="font-size:.68rem;color:var(--dou);margin-top:2px">💬 ${a.observacao}</div>`:''}
+               </td>
+               <td>
+                 ${colabs.length
+                   ? colabs.map(c=>`<div style="font-size:.73rem">${c.nome.split(' ').slice(0,2).join(' ')}</div>${vincBadge(c.vinculo)}`).join('')
+                   : '—'}
+               </td>
+               <td>${faseBadge(a.fase)}</td>
+               <td>${complexBadge(a.complexidade)}</td>
+               <td style="font-size:.76rem;white-space:nowrap">
+                 ${a.data_inicio ? fmtData(a.data_inicio) : '—'}<br>
+                 <span style="color:var(--cz)">até ${a.data_fim ? fmtData(a.data_fim) : '—'}</span>
+               </td>
+               <td style="font-weight:600;color:var(--azul)">${a.horas_estimadas||'—'}h</td>
+               <td><div style="display:flex;align-items:center;gap:3px">
+                 <div class="pbar"><div class="pfill" style="width:${a.percentual||0}%"></div></div>
+                 <span style="font-size:.72rem;color:var(--cz)">${a.percentual||0}%</span>
+               </div></td>
+               <td>${statusBadge(a.status)}</td>
+               <td><div style="display:flex;gap:3px">
+                 <button class="btn btn-edit" onclick="editar('${a.id}')">✏</button>
+                 <button class="btn btn-del" onclick="remover('${a.id}')">✕</button>
+               </div></td>
+             </tr>`;
+           }).join('')}
+           </tbody></table>`}
+    </div>`;
+  });
+  if (!produtos.length) html = '<div class="empty">Nenhum produto cadastrado para este gerente. Cadastre uma ação e crie um produto novo.</div>';
+  document.getElementById('tab-acoes').innerHTML = html;
+}
+
+function renderGantt() {
+  let html = `<div class="gh-row">
+    <div class="gc-label">Ação</div>
+    <div class="gm-hdr">${MESES.map(m=>`<div class="gm-lbl">${m}</div>`).join('')}</div>
+  </div>`;
+  produtos.forEach(p => {
+    const pa = acoes.filter(a => a.produto_id === p.id);
+    if (!pa.length) return;
+    const tipo = TIPOS_PRODUTO[p.tipo]||{cor:'#888'};
+    html += `<div class="g-group" style="color:${tipo.cor}">${p.nome}</div>`;
+    pa.forEach(a => {
+      const cor = FASES[a.fase]?.cor || '#888';
+      const mi = a.data_inicio ? new Date(a.data_inicio).getMonth()+1 : null;
+      const mf = a.data_fim   ? new Date(a.data_fim).getMonth()+1   : null;
+      const colabs = (a.executores_ids||[]).map(id=>colaboradores.find(c=>c.id===id)?.nome.split(' ')[0]).filter(Boolean);
+      const cells = MESES.map((_,i) => {
+        const m = i+1, ativo = mi && mf && m>=mi && m<=mf;
+        return `<div class="g-cell" style="${ativo?`background:${cor}`:''};${m===mesAtual?'box-shadow:inset 0 0 0 1px var(--dou)':''}"></div>`;
+      }).join('');
+      html += `<div class="g-row">
+        <div class="g-nome">${a.titulo}
+          <div class="g-sub">${colabs.join(', ')||'—'} · ${a.horas_estimadas||0}h</div>
+        </div>
+        <div class="g-grid">${cells}</div>
+      </div>`;
+    });
+  });
+  document.getElementById('gantt').innerHTML = html;
+}
+
+function renderExec() {
+  const mapa = {};
+  acoes.forEach(a => {
+    (a.executores_ids||[]).forEach(id => {
+      if (!mapa[id]) mapa[id] = [];
+      mapa[id].push(a);
+    });
+  });
+  let html = '';
+  Object.entries(mapa).forEach(([id, ea]) => {
+    const e = colaboradores.find(c=>c.id===id);
+    if (!e) return;
+    const h = ea.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+    html += `<div class="exec-card">
+      <div class="exec-header">
+        <div><div style="font-weight:600;font-size:.84rem">${e.nome}</div><div style="margin-top:3px">${vincBadge(e.vinculo)}</div></div>
+        <div><div class="exec-h">${h}h</div><div style="font-size:.66rem;color:var(--cz)">${ea.length} ação(ões)</div></div>
+      </div>
+      ${ea.map(a => {
+        const p = produtos.find(x=>x.id===a.produto_id);
+        return `<div class="exec-item">
+          <div><div>${a.titulo}</div><div style="font-size:.67rem;color:var(--cz)">${p?.nome||''}</div></div>
+          <div style="display:flex;gap:4px;align-items:center;margin-left:8px;white-space:nowrap">
+            <span style="font-weight:600;color:var(--azul)">${a.horas_estimadas||0}h</span>
+            ${faseBadge(a.fase)}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  });
+  document.getElementById('exec-grid').innerHTML = html || '<div class="empty">Nenhum colaborador com ações atribuídas</div>';
+}
+
+// ============================================================
+// MODAL AÇÃO
+// ============================================================
+function abrirModal(prodId) {
+  editId = null;
+  document.getElementById('m-title').textContent = 'Nova ação';
+  resetForm();
+  popularProdutos(prodId);
+  renderColabList('');
+  document.getElementById('overlay').classList.add('open');
+}
+
+function editar(id) {
+  const a = acoes.find(x => x.id === id);
+  if (!a) return;
+  editId = id;
+  document.getElementById('m-title').textContent = 'Editar ação';
+  popularProdutos(a.produto_id);
+  document.getElementById('f-titulo').value      = a.titulo;
+  document.getElementById('f-descricao').value   = a.descricao || '';
+  document.getElementById('f-obs').value         = a.observacao || '';
+  document.getElementById('f-fase').value        = a.fase;
+  document.getElementById('f-cx').value          = a.complexidade;
+  document.getElementById('f-prio').value        = a.prioridade;
+  document.getElementById('f-status').value      = a.status;
+  document.getElementById('f-data-inicio').value = a.data_inicio || '';
+  document.getElementById('f-data-fim').value    = a.data_fim || '';
+  document.getElementById('f-horas').value       = a.horas_estimadas || '';
+  document.getElementById('f-pct').value         = a.percentual || 0;
+  colabsSelecionados = [...(a.executores_ids||[])];
+  renderColabList('');
+  renderColabTags();
+  document.getElementById('overlay').classList.add('open');
+}
+
+function popularProdutos(selId) {
+  const s = document.getElementById('f-produto');
+  s.innerHTML = '<option value="">— Selecione o produto —</option>';
+  produtos.forEach(p => {
+    s.insertAdjacentHTML('beforeend', `<option value="${p.id}" ${p.id===selId?'selected':''}>${p.nome}</option>`);
+  });
+}
+
+function resetForm() {
+  colabsSelecionados = [];
+  ['f-titulo','f-descricao','f-obs','f-horas'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-fase').value   = 'planejamento';
+  document.getElementById('f-cx').value     = 'media';
+  document.getElementById('f-prio').value   = 'media';
+  document.getElementById('f-status').value = 'planejado';
+  document.getElementById('f-pct').value    = 0;
+  const hoje = new Date().toISOString().split('T')[0];
+  document.getElementById('f-data-inicio').value = hoje;
+  document.getElementById('f-data-fim').value    = hoje;
+  document.getElementById('colab-search').value  = '';
+  renderColabTags();
+}
+
+// ---- Colaboradores no modal ----
+function filtrarColabs() {
+  const q = document.getElementById('colab-search').value;
+  renderColabList(q);
+}
+
+function renderColabList(q) {
+  const lista = document.getElementById('colab-list');
+  const filtered = colaboradores
+    .filter(c => c.nome.toLowerCase().includes((q||'').toLowerCase()))
+    .sort((a,b) => a.nome.localeCompare(b.nome,'pt-BR'));
+  lista.innerHTML = filtered.map(c => `
+    <div class="colab-item" onclick="toggleColab('${c.id}')">
+      <input type="checkbox" ${colabsSelecionados.includes(c.id)?'checked':''} onclick="event.stopPropagation();toggleColab('${c.id}')">
+      <div>
+        <div style="font-weight:500">${c.nome}</div>
+        <div style="font-size:.67rem;color:var(--cz)">${c.vinculo} · ${c.area||''}</div>
+      </div>
+    </div>`).join('') || '<div style="padding:.5rem .65rem;font-size:.78rem;color:var(--cz)">Nenhum resultado</div>';
+}
+
+function toggleColab(id) {
+  const idx = colabsSelecionados.indexOf(id);
+  if (idx >= 0) colabsSelecionados.splice(idx, 1);
+  else colabsSelecionados.push(id);
+  renderColabList(document.getElementById('colab-search').value);
+  renderColabTags();
+}
+
+function renderColabTags() {
+  const tags = document.getElementById('colab-tags');
+  tags.innerHTML = colabsSelecionados.map(id => {
+    const c = colaboradores.find(x=>x.id===id);
+    return c ? `<span class="tag">${c.nome.split(' ').slice(0,2).join(' ')}<span class="tag-x" onclick="toggleColab('${id}')">×</span></span>` : '';
+  }).join('');
+}
+
+async function salvar() {
+  const titulo     = document.getElementById('f-titulo').value.trim();
+  const produto_id = document.getElementById('f-produto').value;
+  if (!titulo || !produto_id) { alert('Preencha produto e título.'); return; }
+  const di = document.getElementById('f-data-inicio').value;
+  const df = document.getElementById('f-data-fim').value;
+  if (di && df && di > df) { alert('A data de início não pode ser posterior à data de fim.'); return; }
+
+  const campos = {
+    produto_id,
+    gerente_id:      gerenteId,
+    titulo,
+    descricao:       document.getElementById('f-descricao').value.trim(),
+    observacao:      document.getElementById('f-obs').value.trim(),
+    executores_ids:  colabsSelecionados,
+    fase:            document.getElementById('f-fase').value,
+    complexidade:    document.getElementById('f-cx').value,
+    prioridade:      document.getElementById('f-prio').value,
+    status:          document.getElementById('f-status').value,
+    data_inicio:     di || null,
+    data_fim:        df || null,
+    horas_estimadas: parseInt(document.getElementById('f-horas').value) || 0,
+    percentual:      parseInt(document.getElementById('f-pct').value) || 0,
+    aprovacao_coord: 'pendente', aprovacao_dir: 'pendente', aprovacao_sec: 'pendente',
+  };
+
+  try {
+    if (editId) await dbAtualizarAcao(editId, campos);
+    else        await dbCriarAcao(campos);
+    fechar();
+    await carregar();
+  } catch(e) { alert('Erro ao salvar: ' + e.message); }
+}
+
+async function remover(id) {
+  if (!confirm('Remover esta ação?')) return;
+  try { await dbRemoverAcao(id); await carregar(); }
+  catch(e) { alert('Erro: ' + e.message); }
+}
+
+function fechar() { document.getElementById('overlay').classList.remove('open'); }
+function fecharFora(e) { if (e.target.id === 'overlay') fechar(); }
+
+// ============================================================
+// MODAL NOVO PRODUTO
+// ============================================================
+function abrirNovoProduto() {
+  document.getElementById('np-nome').value = '';
+  document.getElementById('np-desc').value = '';
+  document.getElementById('overlay-produto').classList.add('open');
+}
+
+function fecharNovoProduto() {
+  document.getElementById('overlay-produto').classList.remove('open');
+}
+
+function fecharFora2(e) { if (e.target.id === 'overlay-produto') fecharNovoProduto(); }
+
+async function salvarNovoProduto() {
+  const nome = document.getElementById('np-nome').value.trim();
+  if (!nome) { alert('Digite o nome do produto.'); return; }
+  try {
+    const [novo] = await dbCriarProduto({
+      nome,
+      tipo:       document.getElementById('np-tipo').value,
+      descricao:  document.getElementById('np-desc').value.trim(),
+      gerente_id: gerenteId,
+    });
+    produtos.push(novo);
+    popularProdutos(novo.id);
+    fecharNovoProduto();
+  } catch(e) { alert('Erro ao criar produto: ' + e.message); }
+}
+
+// ============================================================
+// MODAL ADMIN
+// ============================================================
+function abrirAdmin() {
+  renderAdminGerentes();
+  renderAdminColabs();
+  document.getElementById('overlay-admin').classList.add('open');
+}
+
+function fecharAdmin(e) {
+  if (e.target.id === 'overlay-admin') document.getElementById('overlay-admin').classList.remove('open');
+}
+
+function adminTab(t) {
+  document.querySelectorAll('#overlay-admin .tab').forEach(x => x.classList.toggle('active', x.dataset.tab===t));
+  document.getElementById('adm-gerentes').style.display = t==='adm-gerentes' ? 'block' : 'none';
+  document.getElementById('adm-colabs').style.display   = t==='adm-colabs'   ? 'block' : 'none';
+}
+
+// ---- Gerentes admin ----
+function renderAdminGerentes() {
+  const lista = document.getElementById('adm-gerentes-lista');
+  if (!gerentes.length) { lista.innerHTML = '<div class="empty" style="padding:.75rem">Nenhum gerente cadastrado</div>'; return; }
+  lista.innerHTML = `<table class="t"><thead><tr><th>Nome</th><th>Área</th><th>Vínculo</th><th></th></tr></thead><tbody>
+    ${gerentes.map(g=>`<tr>
+      <td style="font-weight:500">${g.nome}</td>
+      <td style="font-size:.75rem">${g.area||'—'}</td>
+      <td>${vincBadge(g.vinculo||'Servidor')}</td>
+      <td><button class="btn btn-del btn-sm" onclick="removerGerente('${g.id}','${g.nome.replace(/'/g,"\\'")}')">Remover</button></td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+function abrirNovoGerente() {
+  document.getElementById('ng-nome').value = '';
+  document.getElementById('ng-area').value = '';
+  document.getElementById('ng-sala').value = '';
+  document.getElementById('form-gerente').style.display = 'block';
+}
+
+function fecharNovoGerente() { document.getElementById('form-gerente').style.display = 'none'; }
+
+async function salvarNovoGerente() {
+  const nome = document.getElementById('ng-nome').value.trim();
+  if (!nome) { alert('Nome obrigatório.'); return; }
+  try {
+    const [novo] = await dbCriarGerente({
+      nome,
+      area:    document.getElementById('ng-area').value.trim(),
+      vinculo: document.getElementById('ng-vinculo').value,
+      sala:    document.getElementById('ng-sala').value.trim(),
+    });
+    gerentes.push(novo);
+    gerentes.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+    popularSelectGerentes();
+    renderAdminGerentes();
+    fecharNovoGerente();
+  } catch(e) { alert('Erro: ' + e.message); }
+}
+
+async function removerGerente(id, nome) {
+  if (!confirm(`Remover "${nome}" da lista de gerentes?`)) return;
+  try {
+    await dbRemoverGerente(id);
+    gerentes = gerentes.filter(g => g.id !== id);
+    popularSelectGerentes();
+    renderAdminGerentes();
+    if (gerenteId === id) { gerenteId = null; show('empty'); }
+  } catch(e) { alert('Erro: ' + e.message); }
+}
+
+// ---- Colaboradores admin ----
+function renderAdminColabs() {
+  const lista = document.getElementById('adm-colabs-lista');
+  if (!colaboradores.length) { lista.innerHTML = '<div class="empty" style="padding:.75rem">Nenhum colaborador cadastrado</div>'; return; }
+  lista.innerHTML = `<table class="t"><thead><tr><th>Nome</th><th>Área</th><th>Vínculo</th><th></th></tr></thead><tbody>
+    ${colaboradores.map(c=>`<tr>
+      <td style="font-weight:500">${c.nome}</td>
+      <td style="font-size:.75rem">${c.area||'—'}</td>
+      <td>${vincBadge(c.vinculo||'Servidor')}</td>
+      <td><button class="btn btn-del btn-sm" onclick="removerColab('${c.id}','${c.nome.replace(/'/g,"\\'")}')">Remover</button></td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+function abrirNovoColab() {
+  document.getElementById('nc-nome').value = '';
+  document.getElementById('nc-area').value = '';
+  document.getElementById('nc-sala').value = '';
+  document.getElementById('form-colab').style.display = 'block';
+}
+
+function fecharNovoColab() { document.getElementById('form-colab').style.display = 'none'; }
+
+async function salvarNovoColab() {
+  const nome = document.getElementById('nc-nome').value.trim();
+  if (!nome) { alert('Nome obrigatório.'); return; }
+  try {
+    const [novo] = await dbCriarColaborador({
+      nome,
+      area:    document.getElementById('nc-area').value.trim(),
+      vinculo: document.getElementById('nc-vinculo').value,
+      sala:    document.getElementById('nc-sala').value.trim(),
+    });
+    colaboradores.push(novo);
+    colaboradores.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+    renderAdminColabs();
+    fecharNovoColab();
+  } catch(e) { alert('Erro: ' + e.message); }
+}
+
+async function removerColab(id, nome) {
+  if (!confirm(`Remover "${nome}" da lista de colaboradores?`)) return;
+  try {
+    await dbRemoverColaborador(id);
+    colaboradores = colaboradores.filter(c => c.id !== id);
+    renderAdminColabs();
+  } catch(e) { alert('Erro: ' + e.message); }
+}
+
+// ============================================================
+// PDF
+// ============================================================
+function gerarPDFProduto(prodId) {
+  const p = produtos.find(x=>x.id===prodId);
+  const pa = acoes.filter(a => a.produto_id === prodId);
+  if (!pa.length) { alert('Nenhuma ação para exportar.'); return; }
+  const gerente = gerentes.find(g=>g.id===gerenteId);
+  const th = pa.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+  const rows = pa.map(a => {
+    const colabs = (a.executores_ids||[]).map(id=>colaboradores.find(c=>c.id===id)?.nome.split(' ').slice(0,2).join(' ')).filter(Boolean);
+    return `<tr>
+      <td>${a.titulo}${a.descricao?'<br><small style="color:#666">'+a.descricao+'</small>':''}${a.observacao?'<br><small style="color:#C8922A">Obs: '+a.observacao+'</small>':''}</td>
+      <td>${colabs.join(', ')||'—'}</td>
+      <td>${FASES[a.fase]?.label||a.fase}</td>
+      <td>${COMPLEXIDADE[a.complexidade]?.label||a.complexidade}</td>
+      <td>${a.data_inicio?fmtData(a.data_inicio):'—'} → ${a.data_fim?fmtData(a.data_fim):'—'}</td>
+      <td>${a.horas_estimadas||0}h</td>
+      <td>${a.percentual||0}%</td>
+      <td>${STATUS_LABELS[a.status]?.label||a.status}</td>
+    </tr>`;
+  }).join('');
+  gerarPDF(`Planejamento — ${p.nome}`, `
+    <h1>${p.nome}</h1>
+    <p class="sub">Gerente: ${gerente?.nome||'—'} · Total: ${pa.length} ações · ${th}h estimadas</p>
+    <table><thead><tr><th>Ação</th><th>Colaboradores</th><th>Fase</th><th>Complexidade</th><th>Período</th><th>Horas</th><th>Avanço</th><th>Status</th></tr></thead>
+    <tbody>${rows}</tbody></table>`);
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function trocarTab(t) {
+  tabAtiva = t;
+  document.querySelectorAll('#painel .tab').forEach(x => x.classList.toggle('active', x.dataset.tab===t));
+  ['acoes','gantt','exec'].forEach(x => document.getElementById('tab-'+x).style.display=(x===t)?'block':'none');
+  if (t==='gantt') renderGantt();
+  if (t==='exec')  renderExec();
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function fmtData(d) {
+  if (!d) return '—';
+  const [y,m,day] = d.split('-');
+  return `${day}/${m}/${y}`;
+}
+
+init();
+</script>
+</body>
+</html>
