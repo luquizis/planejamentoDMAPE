@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEGAPE — Coordenação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cor: #2E5CA8;
+    --cor-claro: #4A7ED0;
+    --cor-bg: #E8EEFA;
+    --azul: #1B3A6B;
+    --cinza-escuro: #2C2C2C;
+    --cinza: #5F5F5F;
+    --cinza-claro: #F4F3EF;
+    --branco: #FAFAF8;
+    --borda: rgba(0,0,0,0.09);
+    --verde: #1D7A55;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cinza-claro); min-height: 100vh; }
+  header {
+    background: var(--azul); padding: 0.9rem 2rem;
+    display: flex; align-items: center; gap: 1rem;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; color: #E8B84B; }
+  .header-perfil { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+  .badge-perfil { background: var(--cor-bg); color: var(--cor); padding: 3px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 500; }
+  .btn-voltar { color: rgba(255,255,255,0.6); font-size: 0.8rem; text-decoration: none; border: 1px solid rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; transition: all 0.15s; }
+  .btn-voltar:hover { color: white; border-color: rgba(255,255,255,0.5); }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+  .page-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.5rem; color: var(--azul); }
+  .page-sub { font-size: 0.875rem; color: var(--cinza); margin-top: 0.25rem; margin-bottom: 2rem; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card { background: var(--branco); border: 1px solid var(--borda); border-radius: 12px; padding: 1rem 1.25rem; }
+  .stat-label { font-size: 0.72rem; color: var(--cinza); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.3rem; }
+  .stat-valor { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.75rem; color: var(--cinza-escuro); }
+  .stat-detalhe { font-size: 0.75rem; color: var(--cinza); margin-top: 0.15rem; }
+
+  .btn { padding: 0.5rem 1.1rem; border-radius: 8px; font-size: 0.82rem; font-weight: 500; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+  .btn-primary { background: var(--cor); color: white; }
+  .btn-primary:hover { background: var(--cor-claro); }
+  .btn-outline { background: transparent; color: var(--cinza-escuro); border: 1px solid var(--borda); }
+  .btn-outline:hover { background: rgba(0,0,0,0.04); }
+  .btn-danger { background: transparent; color: #B34A2A; border: 1px solid rgba(179,74,42,0.3); font-size: 0.75rem; padding: 3px 10px; }
+  .btn-danger:hover { background: rgba(179,74,42,0.07); }
+  .btn-sm { padding: 3px 10px; font-size: 0.75rem; border-radius: 6px; }
+  .btn-aprovar { background: transparent; color: var(--verde); border: 1px solid rgba(29,122,85,0.3); font-size: 0.75rem; padding: 3px 10px; border-radius: 6px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .btn-aprovar:hover { background: rgba(29,122,85,0.07); }
+
+  .toolbar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .toolbar-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; color: var(--cinza-escuro); flex: 1; }
+
+  .tabela-wrapper { background: var(--branco); border: 1px solid var(--borda); border-radius: 12px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: #F0F0EC; color: var(--cinza); font-weight: 500; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.75rem 1rem; text-align: left; }
+  td { padding: 0.75rem 1rem; border-top: 1px solid var(--borda); vertical-align: middle; color: var(--cinza-escuro); }
+  tr:hover td { background: rgba(0,0,0,0.015); }
+  .empty-row td { color: var(--cinza); text-align: center; padding: 2rem; font-style: italic; }
+
+  .expandir { cursor: pointer; font-size: 0.72rem; color: var(--cor); text-decoration: underline; }
+  .ops-row { background: rgba(46,92,168,0.03); }
+  .ops-row td { padding: 0.5rem 1rem 0.5rem 2.5rem; font-size: 0.8rem; color: var(--cinza); }
+  .ops-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
+  .ops-lista li { display: flex; align-items: center; gap: 0.5rem; }
+  .ops-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--verde); flex-shrink: 0; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 999; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--branco); border-radius: 14px; padding: 2rem; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; }
+  .modal-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--azul); margin-bottom: 1.25rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+  .form-group.full { grid-column: span 2; }
+  label { font-size: 0.78rem; font-weight: 500; color: var(--cinza); }
+  input, select, textarea { border: 1px solid var(--borda); border-radius: 8px; padding: 0.5rem 0.75rem; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--cinza-escuro); background: white; outline: none; transition: border-color 0.15s; }
+  input:focus, select:focus, textarea:focus { border-color: var(--cor); }
+  textarea { resize: vertical; min-height: 70px; }
+  .form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+
+  .gantt-mini { min-width: 120px; }
+  .acao-btns { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+  .secao-coord { margin-bottom: 2.5rem; }
+  .secao-coord-header {
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem; border-bottom: 2px solid var(--cor-bg);
+  }
+  .secao-coord-nome { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--azul); }
+  .secao-coord-sigla {
+    background: var(--cor-bg); color: var(--cor);
+    padding: 2px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+  }
+  .secao-coord-count { margin-left: auto; font-size: 0.78rem; color: var(--cinza); }
+
+  @media (max-width: 700px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">SEGAPE</div>
+  <span style="color:rgba(255,255,255,0.4);font-size:1.2rem;">·</span>
+  <span style="color:rgba(255,255,255,0.7);font-size:0.85rem;">Planejamento de Demandas</span>
+  <div class="header-perfil">
+    <span class="badge-perfil">Coordenação</span>
+    <a href="index.html" class="btn-voltar">← Início</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="page-title">Painel da Coordenação</div>
+  <div class="page-sub">Gerencie as demandas estratégicas e acompanhe as entregas operacionais</div>
+
+  <div class="stats-grid" id="stats-grid"></div>
+
+  <div class="toolbar">
+    <div class="toolbar-title">Demandas Estratégicas</div>
+    <button class="btn btn-primary" onclick="abrirModal()">+ Nova demanda estratégica</button>
+    <button class="btn btn-outline" onclick="exportarJSON()">Exportar JSON</button>
+    <label class="btn btn-outline" style="cursor:pointer">
+      Importar JSON <input type="file" accept=".json" style="display:none" onchange="handleImport(event)">
+    </label>
+  </div>
+
+  <div id="secoes-coordenacao"></div>
+</div>
+
+<div class="modal-overlay" id="modal" onclick="fecharModalFora(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Nova demanda estratégica</div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Título da demanda *</label>
+        <input type="text" id="f-titulo" placeholder="Ex: Implementação do Plano de Cargos e Salários">
+      </div>
+      <div class="form-group full">
+        <label>Descrição / objetivo estratégico</label>
+        <textarea id="f-desc" placeholder="Descreva o objetivo estratégico desta demanda..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Coordenação responsável *</label>
+        <select id="f-coord"></select>
+      </div>
+      <div class="form-group">
+        <label>Responsável</label>
+        <input type="text" id="f-resp" placeholder="Nome do coordenador responsável">
+      </div>
+      <div class="form-group">
+        <label>Prioridade</label>
+        <select id="f-prioridade">
+          <option value="alta">Alta</option>
+          <option value="media" selected>Média</option>
+          <option value="baixa">Baixa</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="f-status">
+          <option value="planejado">Planejado</option>
+          <option value="em_andamento">Em andamento</option>
+          <option value="concluido">Concluído</option>
+          <option value="suspenso">Suspenso</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Mês de início *</label>
+        <select id="f-inicio"></select>
+      </div>
+      <div class="form-group">
+        <label>Mês de término *</label>
+        <select id="f-fim"></select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarDemanda()">Salvar demanda</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/dados.js"></script>
+<script>
+  let editandoId = null;
+  const MESES_OPT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  function init() {
+    preencherSelects();
+    renderStats();
+    renderSecoes();
+  }
+
+  function preencherSelects() {
+    const data = getData();
+    const selCoord = document.getElementById('f-coord');
+    selCoord.innerHTML = data.coordenacoes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+    ['f-inicio','f-fim'].forEach(id => {
+      const sel = document.getElementById(id);
+      sel.innerHTML = MESES_OPT.map((m,i) => `<option value="${i+1}">${m}</option>`).join('');
+    });
+    document.getElementById('f-fim').value = '12';
+  }
+
+  function renderStats() {
+    const r = calcularResumo();
+    const data = getData();
+    const est = data.demandas_estrategicas;
+    const pendAprovacao = est.filter(d => d.aprovacao_diretoria === 'pendente').length;
+    const stats = [
+      { label: 'Demandas estratégicas', valor: r.total_estrategicas, detalhe: 'cadastradas' },
+      { label: 'Aprovadas pela Diretoria', valor: r.aprovadas, detalhe: 'com ciência' },
+      { label: 'Aguardando aprovação', valor: pendAprovacao, detalhe: 'pendentes' },
+      { label: 'Demandas operacionais', valor: r.total_operacionais, detalhe: 'vinculadas' },
+    ];
+    document.getElementById('stats-grid').innerHTML = stats.map(s => `
+      <div class="stat-card">
+        <div class="stat-label">${s.label}</div>
+        <div class="stat-valor">${s.valor}</div>
+        <div class="stat-detalhe">${s.detalhe}</div>
+      </div>`).join('');
+  }
+
+  function renderSecoes() {
+    const data = getData();
+    const container = document.getElementById('secoes-coordenacao');
+
+    if (!data.demandas_estrategicas.length) {
+      container.innerHTML = `<div class="tabela-wrapper"><table><thead><tr>
+        <th style="width:30%">Demanda</th><th>Período</th><th>Cronograma</th>
+        <th>Aprovação</th><th>Status</th><th>Ações</th></tr></thead>
+        <tbody><tr class="empty-row"><td colspan="6">Nenhuma demanda estratégica cadastrada ainda.</td></tr></tbody></table></div>`;
+      return;
+    }
+
+    container.innerHTML = data.coordenacoes.map(coord => {
+      const demandas = data.demandas_estrategicas.filter(d => d.coordenacao_id === coord.id);
+      if (!demandas.length) return '';
+      const rows = demandas.map(d => {
+        const ops = data.demandas_operacionais.filter(o => o.demanda_estrategica_id === d.id);
+        const opsHTML = ops.length ? `
+          <ul class="ops-lista">${ops.map(o => `
+            <li><span class="ops-dot"></span>${o.titulo} — ${statusBadgeHTML(o.status)}</li>`).join('')}
+          </ul>` : '<em>Nenhuma demanda operacional vinculada.</em>';
+        const aprovBadge = d.aprovacao_diretoria === 'aprovado'
+          ? `<span style="color:#1D7A55;font-size:0.78rem;font-weight:500">✓ Aprovado</span>`
+          : `<span style="color:#C8922A;font-size:0.78rem;font-weight:500">⏳ Pendente</span>`;
+        return `
+          <tr>
+            <td>
+              <div style="font-weight:500">${d.titulo}</div>
+              ${d.responsavel ? `<div style="font-size:0.75rem;color:var(--cinza)">${d.responsavel}</div>` : ''}
+              ${prioridadeBadgeHTML(d.prioridade)}
+            </td>
+            <td style="font-size:0.8rem;white-space:nowrap">${mesToNome(d.mes_inicio)} → ${mesToNome(d.mes_fim)}</td>
+            <td class="gantt-mini">${ganttBarHTML(d.mes_inicio, d.mes_fim, '#2E5CA8')}</td>
+            <td>${aprovBadge}</td>
+            <td>${statusBadgeHTML(d.status)}</td>
+            <td>
+              <div class="acao-btns">
+                <button class="btn btn-sm btn-outline" onclick="editarDemanda('${d.id}')">Editar</button>
+                <button class="btn btn-sm btn-danger" onclick="confirmarRemover('${d.id}')">Remover</button>
+              </div>
+              <div style="margin-top:4px">
+                <span class="expandir" onclick="toggleOps('ops_${d.id}')">
+                  ${ops.length} demanda(s) operacional(is) ▾
+                </span>
+              </div>
+            </td>
+          </tr>
+          <tr class="ops-row" id="ops_${d.id}" style="display:none">
+            <td colspan="6">${opsHTML}</td>
+          </tr>`;
+      }).join('');
+
+      return `<div class="secao-coord">
+        <div class="secao-coord-header">
+          <span class="secao-coord-sigla">${coord.sigla}</span>
+          <span class="secao-coord-nome">${coord.nome}</span>
+          <span class="secao-coord-count">${demandas.length} demanda(s)</span>
+        </div>
+        <div class="tabela-wrapper">
+          <table>
+            <thead><tr>
+              <th style="width:30%">Demanda</th><th>Período</th><th>Cronograma</th>
+              <th>Aprovação</th><th>Status</th><th>Ações</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleOps(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = el.style.display === 'none' ? '' : 'none';
+  }
+
+  function abrirModal() {
+    editandoId = null;
+    document.getElementById('modal-title').textContent = 'Nova demanda estratégica';
+    document.getElementById('f-titulo').value = '';
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-resp').value = '';
+    document.getElementById('f-prioridade').value = 'media';
+    document.getElementById('f-inicio').value = '1';
+    document.getElementById('f-fim').value = '12';
+    document.getElementById('f-status').value = 'planejado';
+    document.getElementById('modal').classList.add('open');
+  }
+
+  function editarDemanda(id) {
+    const data = getData();
+    const d = data.demandas_estrategicas.find(x => x.id === id);
+    if (!d) return;
+    editandoId = id;
+    document.getElementById('modal-title').textContent = 'Editar demanda estratégica';
+    document.getElementById('f-titulo').value = d.titulo;
+    document.getElementById('f-desc').value = d.descricao || '';
+    document.getElementById('f-resp').value = d.responsavel || '';
+    document.getElementById('f-prioridade').value = d.prioridade || 'media';
+    document.getElementById('f-coord').value = d.coordenacao_id;
+    document.getElementById('f-inicio').value = d.mes_inicio;
+    document.getElementById('f-fim').value = d.mes_fim;
+    document.getElementById('f-status').value = d.status;
+    document.getElementById('modal').classList.add('open');
+  }
+
+  function fecharModal() { document.getElementById('modal').classList.remove('open'); }
+  function fecharModalFora(e) { if (e.target === document.getElementById('modal')) fecharModal(); }
+
+  function salvarDemanda() {
+    const titulo = document.getElementById('f-titulo').value.trim();
+    if (!titulo) { alert('Informe o título.'); return; }
+    const payload = {
+      titulo,
+      descricao: document.getElementById('f-desc').value.trim(),
+      coordenacao_id: document.getElementById('f-coord').value,
+      responsavel: document.getElementById('f-resp').value.trim(),
+      prioridade: document.getElementById('f-prioridade').value,
+      mes_inicio: document.getElementById('f-inicio').value,
+      mes_fim: document.getElementById('f-fim').value,
+      status: document.getElementById('f-status').value,
+    };
+    if (editandoId) {
+      atualizarDemandaEstrategica(editandoId, payload);
+    } else {
+      criarDemandaEstrategica(payload);
+    }
+    fecharModal();
+    renderStats();
+    renderSecoes();
+  }
+
+  function confirmarRemover(id) {
+    if (confirm('Remover esta demanda estratégica e todas as operacionais vinculadas?')) {
+      removerDemandaEstrategica(id);
+      renderStats();
+      renderSecoes();
+    }
+  }
+
+  function handleImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    importarJSON(file, (err) => {
+      if (err) { alert('Erro ao importar.'); return; }
+      preencherSelects();
+      renderStats();
+      renderSecoes();
+      alert('Dados importados com sucesso!');
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>

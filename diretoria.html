@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEGAPE — Diretoria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cor: #B07B1A;
+    --cor-claro: #D4971E;
+    --cor-bg: #FEF3E0;
+    --dourado: #C8922A;
+    --azul: #1B3A6B;
+    --azul-medio: #2E5CA8;
+    --verde: #1D7A55;
+    --cinza-escuro: #2C2C2C;
+    --cinza: #5F5F5F;
+    --cinza-claro: #F4F3EF;
+    --branco: #FAFAF8;
+    --borda: rgba(0,0,0,0.09);
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cinza-claro); min-height: 100vh; }
+  header { background: var(--azul); padding: 0.9rem 2rem; display: flex; align-items: center; gap: 1rem; position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; color: #E8B84B; }
+  .header-perfil { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+  .badge-perfil { background: var(--cor-bg); color: var(--dourado); padding: 3px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 500; }
+  .btn-voltar { color: rgba(255,255,255,0.6); font-size: 0.8rem; text-decoration: none; border: 1px solid rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; transition: all 0.15s; }
+  .btn-voltar:hover { color: white; border-color: rgba(255,255,255,0.5); }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+  .page-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.5rem; color: var(--azul); }
+  .page-sub { font-size: 0.875rem; color: var(--cinza); margin-top: 0.25rem; margin-bottom: 2rem; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card { background: var(--branco); border: 1px solid var(--borda); border-radius: 12px; padding: 1rem 1.25rem; position: relative; overflow: hidden; }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .stat-card.c1::before { background: var(--dourado); }
+  .stat-card.c2::before { background: var(--azul-medio); }
+  .stat-card.c3::before { background: var(--verde); }
+  .stat-card.c4::before { background: #888; }
+  .stat-label { font-size: 0.72rem; color: var(--cinza); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.3rem; }
+  .stat-valor { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.75rem; color: var(--cinza-escuro); }
+  .stat-detalhe { font-size: 0.75rem; color: var(--cinza); margin-top: 0.15rem; }
+
+  .btn { padding: 0.5rem 1.1rem; border-radius: 8px; font-size: 0.82rem; font-weight: 500; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+  .btn-primary { background: var(--azul); color: white; }
+  .btn-primary:hover { background: var(--azul-medio); }
+  .btn-outline { background: transparent; color: var(--cinza-escuro); border: 1px solid var(--borda); }
+  .btn-outline:hover { background: rgba(0,0,0,0.04); }
+  .btn-pdf { background: #B34A2A; color: white; }
+  .btn-pdf:hover { background: #923D22; }
+  .btn-sm { padding: 3px 10px; font-size: 0.75rem; border-radius: 6px; }
+  .btn-aprovar { background: transparent; color: var(--verde); border: 1px solid rgba(29,122,85,0.3); font-size: 0.75rem; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .btn-aprovar:hover { background: rgba(29,122,85,0.07); }
+  .btn-pendente { background: transparent; color: var(--dourado); border: 1px solid rgba(200,146,42,0.3); font-size: 0.75rem; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .btn-pendente:hover { background: rgba(200,146,42,0.07); }
+
+  .toolbar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .toolbar-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; color: var(--cinza-escuro); flex: 1; }
+
+  .tabela-wrapper { background: var(--branco); border: 1px solid var(--borda); border-radius: 12px; overflow: hidden; margin-bottom: 2rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: #F0F0EC; color: var(--cinza); font-weight: 500; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.75rem 1rem; text-align: left; }
+  td { padding: 0.75rem 1rem; border-top: 1px solid var(--borda); vertical-align: middle; color: var(--cinza-escuro); }
+  tr:hover td { background: rgba(0,0,0,0.015); }
+  .empty-row td { color: var(--cinza); text-align: center; padding: 2rem; font-style: italic; }
+
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+  .chart-card { background: var(--branco); border: 1px solid var(--borda); border-radius: 12px; padding: 1.5rem; }
+  .chart-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--cinza-escuro); margin-bottom: 1rem; }
+
+  .gantt-section { background: var(--branco); border: 1px solid var(--borda); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+  .gantt-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; color: var(--cinza-escuro); margin-bottom: 1.25rem; }
+  .gantt-header { display: grid; grid-template-columns: 240px 1fr; gap: 0; margin-bottom: 0.5rem; }
+  .gantt-meses { display: grid; grid-template-columns: repeat(12, 1fr); gap: 0; }
+  .gantt-mes-label { font-size: 0.68rem; color: var(--cinza); text-align: center; }
+  .gantt-row { display: grid; grid-template-columns: 240px 1fr; gap: 0; padding: 0.4rem 0; border-top: 1px solid var(--borda); align-items: center; }
+  .gantt-nome { font-size: 0.78rem; color: var(--cinza-escuro); padding-right: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gantt-tipo { font-size: 0.65rem; color: var(--cinza); }
+  .gantt-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; }
+  .gantt-cell { height: 14px; border-radius: 2px; background: transparent; }
+  .gantt-cell.est { background: rgba(46,92,168,0.7); }
+  .gantt-cell.ope { background: rgba(29,122,85,0.7); }
+
+  .legend { display: flex; gap: 1.5rem; margin-bottom: 1rem; }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--cinza); }
+  .legend-dot { width: 12px; height: 12px; border-radius: 2px; }
+
+  @media (max-width: 700px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .charts-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">SEGAPE</div>
+  <span style="color:rgba(255,255,255,0.4);font-size:1.2rem;">·</span>
+  <span style="color:rgba(255,255,255,0.7);font-size:0.85rem;">Planejamento de Demandas</span>
+  <div class="header-perfil">
+    <span class="badge-perfil">Diretoria</span>
+    <a href="index.html" class="btn-voltar">← Início</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="page-title">Painel da Diretoria</div>
+  <div class="page-sub">Visão consolidada · Aprovação de demandas estratégicas · Exportação de relatórios</div>
+
+  <div class="stats-grid" id="stats-grid"></div>
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">Demandas por coordenação</div>
+      <div style="position:relative;height:220px"><canvas id="chart-coord" role="img" aria-label="Demandas por coordenação">Gráfico de barras com demandas por coordenação.</canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Status das demandas operacionais</div>
+      <div style="position:relative;height:220px"><canvas id="chart-status" role="img" aria-label="Status das demandas">Gráfico de rosca com status das demandas.</canvas></div>
+    </div>
+  </div>
+
+  <!-- GANTT CONSOLIDADO -->
+  <div class="gantt-section">
+    <div class="gantt-title">Cronograma Consolidado</div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(46,92,168,0.7)"></div> Estratégica</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(29,122,85,0.7)"></div> Operacional</div>
+    </div>
+    <div class="gantt-header">
+      <div></div>
+      <div class="gantt-meses" id="gantt-meses-header"></div>
+    </div>
+    <div id="gantt-rows"></div>
+  </div>
+
+  <!-- APROVAÇÕES -->
+  <div class="toolbar">
+    <div class="toolbar-title">Demandas Estratégicas — Aprovação</div>
+    <button class="btn btn-pdf" onclick="gerarPDF()">Exportar relatório PDF</button>
+    <button class="btn btn-outline" onclick="exportarJSON()">Exportar JSON</button>
+    <label class="btn btn-outline" style="cursor:pointer">
+      Importar JSON <input type="file" accept=".json" style="display:none" onchange="handleImport(event)">
+    </label>
+  </div>
+  <div class="tabela-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:28%">Demanda estratégica</th>
+          <th>Coordenação</th>
+          <th>Período</th>
+          <th>Prioridade</th>
+          <th>Status</th>
+          <th>Aprovação</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody id="tabela-body"></tbody>
+    </table>
+  </div>
+
+  <!-- OPERACIONAIS READ-ONLY -->
+  <div class="toolbar">
+    <div class="toolbar-title">Demandas Operacionais — Visão Geral</div>
+  </div>
+  <div class="tabela-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:28%">Demanda operacional</th>
+          <th>Coordenação</th>
+          <th>Responsável</th>
+          <th>Período</th>
+          <th>Progresso</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tabela-ope-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="assets/dados.js"></script>
+<script>
+  let chartCoord = null, chartStatus = null;
+
+  function init() {
+    renderStats();
+    renderGantt();
+    renderTabelaEstrategica();
+    renderTabelaOperacional();
+    renderCharts();
+  }
+
+  function renderStats() {
+    const r = calcularResumo();
+    const data = getData();
+    const pendAprov = data.demandas_estrategicas.filter(d => d.aprovacao_diretoria === 'pendente').length;
+    const stats = [
+      { label: 'Total estratégicas', valor: r.total_estrategicas, detalhe: 'demandas cadastradas', cls: 'c1' },
+      { label: 'Aprovadas', valor: r.aprovadas, detalhe: 'com ciência da Diretoria', cls: 'c3' },
+      { label: 'Aguardando aprovação', valor: pendAprov, detalhe: 'pendentes', cls: 'c1' },
+      { label: 'Demandas operacionais', valor: r.total_operacionais, detalhe: `média ${r.media_percentual}% concluídas`, cls: 'c2' },
+    ];
+    document.getElementById('stats-grid').innerHTML = stats.map(s => `
+      <div class="stat-card ${s.cls}">
+        <div class="stat-label">${s.label}</div>
+        <div class="stat-valor">${s.valor}</div>
+        <div class="stat-detalhe">${s.detalhe}</div>
+      </div>`).join('');
+  }
+
+  function renderCharts() {
+    const data = getData();
+    if (chartCoord) chartCoord.destroy();
+    if (chartStatus) chartStatus.destroy();
+
+    // Demandas por coordenação
+    const byCoord = {};
+    data.coordenacoes.forEach(c => { byCoord[c.sigla] = { est: 0, ope: 0 }; });
+    data.demandas_estrategicas.forEach(d => {
+      const c = data.coordenacoes.find(x => x.id === d.coordenacao_id);
+      if (c) byCoord[c.sigla].est++;
+    });
+    data.demandas_operacionais.forEach(d => {
+      const c = data.coordenacoes.find(x => x.id === d.coordenacao_id);
+      if (c) byCoord[c.sigla].ope++;
+    });
+    const labels = Object.keys(byCoord);
+    chartCoord = new Chart(document.getElementById('chart-coord'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Estratégicas', data: labels.map(l => byCoord[l].est), backgroundColor: 'rgba(46,92,168,0.75)', borderRadius: 4 },
+          { label: 'Operacionais', data: labels.map(l => byCoord[l].ope), backgroundColor: 'rgba(29,122,85,0.75)', borderRadius: 4 },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } } }
+      }
+    });
+
+    // Status operacionais
+    const statusCount = { planejado: 0, em_andamento: 0, concluido: 0, suspenso: 0 };
+    data.demandas_operacionais.forEach(d => { if (statusCount[d.status] !== undefined) statusCount[d.status]++; });
+    chartStatus = new Chart(document.getElementById('chart-status'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Planejado', 'Em andamento', 'Concluído', 'Suspenso'],
+        datasets: [{ data: Object.values(statusCount), backgroundColor: ['rgba(46,92,168,0.8)','rgba(200,146,42,0.8)','rgba(29,122,85,0.8)','rgba(136,136,136,0.8)'], borderWidth: 0 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } } },
+        cutout: '60%'
+      }
+    });
+  }
+
+  function renderGantt() {
+    const data = getData();
+    const header = document.getElementById('gantt-meses-header');
+    header.innerHTML = MESES.map(m => `<div class="gantt-mes-label">${m}</div>`).join('');
+    const rows = document.getElementById('gantt-rows');
+    const todas = [
+      ...data.demandas_estrategicas.map(d => ({ ...d, _tipo: 'est' })),
+      ...data.demandas_operacionais.map(d => ({ ...d, _tipo: 'ope' })),
+    ];
+    if (!todas.length) { rows.innerHTML = '<p style="color:var(--cinza);font-size:0.85rem;padding:1rem 0">Nenhuma demanda para exibir.</p>'; return; }
+    rows.innerHTML = todas.map(d => {
+      const cells = Array.from({length:12},(_,i) => {
+        const m = i+1;
+        const ativo = m >= d.mes_inicio && m <= d.mes_fim;
+        return `<div class="gantt-cell${ativo ? ' ' + d._tipo : ''}"></div>`;
+      }).join('');
+      return `<div class="gantt-row">
+        <div class="gantt-nome">
+          <div title="${d.titulo}">${d.titulo}</div>
+          <div class="gantt-tipo">${d._tipo === 'est' ? 'Estratégica' : 'Operacional'} · ${getSiglaCoordenacao(d.coordenacao_id)}</div>
+        </div>
+        <div class="gantt-grid">${cells}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderTabelaEstrategica() {
+    const data = getData();
+    const tbody = document.getElementById('tabela-body');
+    if (!data.demandas_estrategicas.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Nenhuma demanda estratégica cadastrada.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.demandas_estrategicas.map(d => {
+      const aprov = d.aprovacao_diretoria === 'aprovado';
+      return `<tr>
+        <td>
+          <div style="font-weight:500">${d.titulo}</div>
+          ${d.responsavel ? `<div style="font-size:0.75rem;color:var(--cinza)">${d.responsavel}</div>` : ''}
+        </td>
+        <td style="font-size:0.8rem">${getSiglaCoordenacao(d.coordenacao_id)}</td>
+        <td style="font-size:0.8rem;white-space:nowrap">${mesToNome(d.mes_inicio)} → ${mesToNome(d.mes_fim)}</td>
+        <td>${prioridadeBadgeHTML(d.prioridade)}</td>
+        <td>${statusBadgeHTML(d.status)}</td>
+        <td>${aprov
+          ? `<span style="color:var(--verde);font-size:0.8rem;font-weight:500">✓ Aprovado</span>`
+          : `<span style="color:var(--dourado);font-size:0.8rem;font-weight:500">⏳ Pendente</span>`}</td>
+        <td>
+          ${aprov
+            ? `<button class="btn-pendente" onclick="toggleAprovacao('${d.id}','pendente')">Revogar</button>`
+            : `<button class="btn-aprovar" onclick="toggleAprovacao('${d.id}','aprovado')">Aprovar</button>`}
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderTabelaOperacional() {
+    const data = getData();
+    const tbody = document.getElementById('tabela-ope-body');
+    if (!data.demandas_operacionais.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Nenhuma demanda operacional cadastrada.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.demandas_operacionais.map(d => {
+      const pct = d.percentual || 0;
+      return `<tr>
+        <td><div style="font-weight:500">${d.titulo}</div>${prioridadeBadgeHTML(d.prioridade)}</td>
+        <td style="font-size:0.8rem">${getSiglaCoordenacao(d.coordenacao_id)}</td>
+        <td style="font-size:0.8rem">${d.responsavel || '—'}</td>
+        <td style="font-size:0.8rem;white-space:nowrap">${mesToNome(d.mes_inicio)} → ${mesToNome(d.mes_fim)}</td>
+        <td style="min-width:90px">
+          <div style="font-size:0.75rem;color:var(--cinza);margin-bottom:2px">${pct}%</div>
+          <div style="height:6px;background:#e0e0e0;border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:var(--verde);border-radius:3px"></div>
+          </div>
+        </td>
+        <td>${statusBadgeHTML(d.status)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function toggleAprovacao(id, novoStatus) {
+    atualizarDemandaEstrategica(id, { aprovacao_diretoria: novoStatus });
+    renderStats();
+    renderTabelaEstrategica();
+  }
+
+  function handleImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    importarJSON(file, (err) => {
+      if (err) { alert('Erro ao importar.'); return; }
+      init();
+      alert('Dados importados com sucesso!');
+    });
+  }
+
+  function gerarPDF() {
+    const data = getData();
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    const r = calcularResumo();
+
+    const estilos = `
+      body { font-family: Arial, sans-serif; font-size: 12px; color: #222; margin: 40px; }
+      h1 { font-size: 20px; color: #1B3A6B; border-bottom: 2px solid #C8922A; padding-bottom: 8px; margin-bottom: 6px; }
+      h2 { font-size: 14px; color: #1B3A6B; margin: 24px 0 8px; }
+      .sub { color: #666; font-size: 11px; margin-bottom: 20px; }
+      .stats { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+      .stat { background: #F4F3EF; padding: 10px 16px; border-radius: 8px; min-width: 120px; }
+      .stat-n { font-size: 22px; font-weight: bold; color: #1B3A6B; }
+      .stat-l { font-size: 10px; color: #666; text-transform: uppercase; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px; }
+      th { background: #1B3A6B; color: white; padding: 7px 10px; text-align: left; }
+      td { padding: 6px 10px; border-bottom: 1px solid #eee; }
+      tr:nth-child(even) td { background: #F9F9F7; }
+      .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 500; }
+      .status-planejado { background: #E8EEFA; color: #2E5CA8; }
+      .status-em_andamento { background: #FEF3E0; color: #C8922A; }
+      .status-concluido { background: #E0F5ED; color: #1D7A55; }
+      .status-suspenso { background: #eee; color: #666; }
+      .aprovado { color: #1D7A55; font-weight: 500; }
+      .pendente { color: #C8922A; font-weight: 500; }
+      .footer { margin-top: 30px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 10px; color: #999; }
+    `;
+
+    const estRows = data.demandas_estrategicas.map(d => `
+      <tr>
+        <td>${d.titulo}</td>
+        <td>${getSiglaCoordenacao(d.coordenacao_id)}</td>
+        <td>${mesToNome(d.mes_inicio)} → ${mesToNome(d.mes_fim)}</td>
+        <td><span class="badge status-${d.status}">${STATUS_LABELS[d.status]?.label || d.status}</span></td>
+        <td class="${d.aprovacao_diretoria === 'aprovado' ? 'aprovado' : 'pendente'}">${d.aprovacao_diretoria === 'aprovado' ? '✓ Aprovado' : '⏳ Pendente'}</td>
+      </tr>`).join('');
+
+    const opeRows = data.demandas_operacionais.map(d => `
+      <tr>
+        <td>${d.titulo}</td>
+        <td>${getSiglaCoordenacao(d.coordenacao_id)}</td>
+        <td>${d.responsavel || '—'}</td>
+        <td>${mesToNome(d.mes_inicio)} → ${mesToNome(d.mes_fim)}</td>
+        <td>${d.percentual || 0}%</td>
+        <td><span class="badge status-${d.status}">${STATUS_LABELS[d.status]?.label || d.status}</span></td>
+      </tr>`).join('');
+
+    const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+      <title>Relatório SEGAPE</title><style>${estilos}</style></head><body>
+      <h1>SEGAPE — Relatório de Planejamento de Demandas</h1>
+      <div class="sub">Gerado em ${hoje} · Ano de planejamento: ${data.ano_planejamento}</div>
+      <div class="stats">
+        <div class="stat"><div class="stat-n">${r.total_estrategicas}</div><div class="stat-l">Demandas estratégicas</div></div>
+        <div class="stat"><div class="stat-n">${r.aprovadas}</div><div class="stat-l">Aprovadas pela Diretoria</div></div>
+        <div class="stat"><div class="stat-n">${r.total_operacionais}</div><div class="stat-l">Demandas operacionais</div></div>
+        <div class="stat"><div class="stat-n">${r.media_percentual}%</div><div class="stat-l">Avanço médio</div></div>
+      </div>
+      <h2>Demandas Estratégicas</h2>
+      <table><thead><tr><th>Demanda</th><th>Coord.</th><th>Período</th><th>Status</th><th>Aprovação</th></tr></thead>
+      <tbody>${estRows || '<tr><td colspan="5" style="color:#999;text-align:center">Nenhuma demanda cadastrada</td></tr>'}</tbody></table>
+      <h2>Demandas Operacionais</h2>
+      <table><thead><tr><th>Demanda</th><th>Coord.</th><th>Responsável</th><th>Período</th><th>Avanço</th><th>Status</th></tr></thead>
+      <tbody>${opeRows || '<tr><td colspan="6" style="color:#999;text-align:center">Nenhuma demanda cadastrada</td></tr>'}</tbody></table>
+      <div class="footer">SEGAPE — Sistema de Gestão e Planejamento Estratégico · Relatório gerado automaticamente</div>
+      </body></html>`;
+
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+    setTimeout(() => { win.focus(); win.print(); }, 500);
+  }
+
+  init();
+</script>
+</body>
+</html>
