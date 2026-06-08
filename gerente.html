@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEGAPE — Gerente de Projeto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --azul: #1B3A6B; --azul-medio: #2E5CA8; --azul-claro: #5B8DD9;
+  --verde: #1D7A55; --dourado: #C8922A; --dourado-claro: #E8B84B;
+  --cinza-escuro: #2C2C2C; --cinza: #5F5F5F; --cinza-claro: #F4F3EF;
+  --branco: #FAFAF8; --borda: rgba(0,0,0,0.09);
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--cinza-claro); min-height: 100vh; display:flex; flex-direction:column; }
+header { background: var(--azul); padding: 1rem 2rem; display:flex; align-items:center; gap:1rem; }
+.logo-sigla { font-family:'Syne',sans-serif; font-weight:800; font-size:1.2rem; color:var(--dourado-claro); }
+.logo-sep { width:1px; height:32px; background:rgba(255,255,255,0.2); margin:0 0.6rem; }
+.logo-nome { font-size:0.7rem; color:rgba(255,255,255,0.5); max-width:320px; line-height:1.4; }
+.header-perfil { margin-left:auto; display:flex; align-items:center; gap:0.5rem; }
+.perfil-select { background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:white; font-size:0.78rem; padding:0.35rem 0.6rem; border-radius:6px; cursor:pointer; }
+.perfil-select option { background:#1B3A6B; }
+.nav-back { font-size:0.75rem; color:rgba(255,255,255,0.55); text-decoration:none; display:flex; align-items:center; gap:0.3rem; }
+.nav-back:hover { color:white; }
+
+main { flex:1; padding:1.5rem 2rem; max-width:1400px; margin:0 auto; width:100%; }
+
+/* TABS */
+.tabs { display:flex; gap:0; border-bottom:2px solid var(--borda); margin-bottom:1.5rem; }
+.tab { padding:0.6rem 1.25rem; font-size:0.82rem; font-weight:500; color:var(--cinza); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.15s; }
+.tab.active { color:var(--azul); border-color:var(--azul); font-weight:600; }
+
+/* PRODUTOS CARDS */
+.produtos-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1rem; margin-bottom:2rem; }
+.produto-card { background:var(--branco); border:1.5px solid var(--borda); border-radius:12px; padding:1.25rem; cursor:pointer; transition:all 0.15s; position:relative; }
+.produto-card:hover { border-color:var(--azul-medio); box-shadow:0 4px 16px rgba(0,0,0,0.07); }
+.produto-card.selected { border-color:var(--azul-medio); background:#F0F4FA; }
+.produto-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:12px 12px 0 0; }
+.produto-card[data-tipo="painel_publico"]::before { background:var(--verde); }
+.produto-card[data-tipo="painel_estrategico"]::before { background:var(--azul); }
+.produto-card[data-tipo="painel_indicadores"]::before { background:var(--azul-medio); }
+.produto-card[data-tipo="relatorio_personalizado"]::before { background:var(--dourado); }
+.produto-nome { font-family:'Syne',sans-serif; font-weight:700; font-size:0.92rem; color:var(--cinza-escuro); margin-bottom:0.4rem; }
+.produto-meta { font-size:0.74rem; color:var(--cinza); margin-bottom:0.6rem; }
+.produto-stats { display:flex; gap:1rem; margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid var(--borda); }
+.pstat { text-align:center; }
+.pstat-n { font-family:'Syne',sans-serif; font-weight:700; font-size:1.1rem; color:var(--azul); }
+.pstat-l { font-size:0.65rem; color:var(--cinza); text-transform:uppercase; }
+
+/* ACOES TABLE */
+.section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; }
+.section-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1rem; color:var(--cinza-escuro); }
+.btn { padding:0.45rem 1rem; border-radius:8px; font-size:0.8rem; font-weight:500; cursor:pointer; border:none; transition:all 0.15s; display:inline-flex; align-items:center; gap:0.35rem; }
+.btn-primary { background:var(--azul); color:white; }
+.btn-primary:hover { background:var(--azul-medio); }
+.btn-outline { background:transparent; border:1.5px solid var(--borda); color:var(--cinza-escuro); }
+.btn-outline:hover { border-color:var(--azul-medio); color:var(--azul); }
+.btn-danger { background:transparent; border:1px solid #ddd; color:#B34A2A; font-size:0.72rem; padding:0.25rem 0.6rem; }
+
+.acoes-table { width:100%; border-collapse:collapse; background:var(--branco); border-radius:12px; overflow:hidden; border:1px solid var(--borda); font-size:0.82rem; }
+.acoes-table th { background:#F0F2F6; padding:0.6rem 0.85rem; text-align:left; font-size:0.7rem; font-weight:600; color:var(--cinza); text-transform:uppercase; letter-spacing:0.04em; border-bottom:1px solid var(--borda); }
+.acoes-table td { padding:0.7rem 0.85rem; border-bottom:1px solid var(--borda); vertical-align:middle; }
+.acoes-table tr:last-child td { border-bottom:none; }
+.acoes-table tr:hover td { background:#F8F8F6; }
+.acao-titulo { font-weight:500; color:var(--cinza-escuro); }
+.acao-desc { font-size:0.72rem; color:var(--cinza); margin-top:2px; }
+.progress-bar { width:80px; height:8px; background:#E5E5E0; border-radius:4px; overflow:hidden; display:inline-block; vertical-align:middle; margin-right:4px; }
+.progress-fill { height:100%; border-radius:4px; background:var(--azul-medio); }
+.gantt-mini { min-width:120px; }
+.empty-state { text-align:center; padding:3rem; color:var(--cinza); font-size:0.85rem; }
+
+/* GANTT */
+.gantt-wrap { background:var(--branco); border:1px solid var(--borda); border-radius:12px; overflow:auto; }
+.gantt-header-row { display:grid; grid-template-columns:220px 1fr; border-bottom:1px solid var(--borda); }
+.gantt-col-label { padding:0.5rem 0.75rem; font-size:0.7rem; color:var(--cinza); font-weight:600; text-transform:uppercase; }
+.gantt-meses-header { display:grid; grid-template-columns:repeat(12,1fr); }
+.gantt-mes { font-size:0.65rem; color:var(--cinza); text-align:center; padding:0.4rem 0; border-left:1px solid var(--borda); }
+.gantt-row { display:grid; grid-template-columns:220px 1fr; border-bottom:1px solid var(--borda); align-items:center; }
+.gantt-row:last-child { border-bottom:none; }
+.gantt-row:hover { background:#F8F8F6; }
+.gantt-nome { padding:0.4rem 0.75rem; font-size:0.76rem; color:var(--cinza-escuro); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gantt-sub { font-size:0.63rem; color:var(--cinza); }
+.gantt-grid { display:grid; grid-template-columns:repeat(12,1fr); }
+.gantt-cell { height:18px; border-left:1px solid var(--borda); background:transparent; }
+.gantt-cell.ativo { opacity:0.85; }
+
+/* MODAL */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:999; align-items:center; justify-content:center; padding:1rem; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--branco); border-radius:14px; padding:2rem; width:100%; max-width:580px; max-height:92vh; overflow-y:auto; }
+.modal-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1.05rem; color:var(--azul); margin-bottom:1.25rem; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
+.form-grid .full { grid-column:1/-1; }
+.field label { display:block; font-size:0.73rem; font-weight:600; color:var(--cinza); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.3rem; }
+.field input, .field select, .field textarea { width:100%; border:1.5px solid var(--borda); border-radius:8px; padding:0.5rem 0.75rem; font-size:0.83rem; font-family:'DM Sans',sans-serif; background:white; color:var(--cinza-escuro); transition:border-color 0.15s; }
+.field input:focus, .field select:focus, .field textarea:focus { outline:none; border-color:var(--azul-claro); }
+.field textarea { resize:vertical; min-height:60px; }
+.modal-footer { display:flex; gap:0.5rem; justify-content:flex-end; margin-top:1.25rem; }
+
+/* RESUMO CARDS */
+.resumo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:0.75rem; margin-bottom:1.5rem; }
+.rcard { background:var(--branco); border:1px solid var(--borda); border-radius:10px; padding:0.9rem 1rem; }
+.rcard-n { font-family:'Syne',sans-serif; font-weight:800; font-size:1.4rem; color:var(--azul); }
+.rcard-l { font-size:0.7rem; color:var(--cinza); text-transform:uppercase; margin-top:2px; }
+
+.filters { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem; }
+.filter { border:1px solid var(--borda); border-radius:6px; padding:0.35rem 0.65rem; font-size:0.78rem; background:white; color:var(--cinza-escuro); cursor:pointer; }
+
+footer { padding:0.75rem 2rem; font-size:0.7rem; color:rgba(0,0,0,0.28); text-align:center; border-top:1px solid var(--borda); }
+</style>
+</head>
+<body>
+<header>
+  <a class="nav-back" href="index.html">← Voltar</a>
+  <div class="logo-sep"></div>
+  <div class="logo-sigla">SEGAPE</div>
+  <div class="logo-sep"></div>
+  <div class="logo-nome">Gerenciamento de Produtos · Planejamento de Ações</div>
+  <div class="header-perfil">
+    <select class="perfil-select" id="gerente-select" onchange="trocarGerente()">
+      <option value="">Selecione o gerente</option>
+    </select>
+  </div>
+</header>
+
+<main>
+  <div id="sem-gerente" style="text-align:center;padding:4rem;color:var(--cinza)">
+    <div style="font-size:2rem;margin-bottom:0.5rem">👆</div>
+    <div style="font-weight:500">Selecione o gerente no topo para ver seus produtos</div>
+  </div>
+
+  <div id="painel-gerente" style="display:none">
+    <!-- Resumo -->
+    <div class="resumo-grid" id="resumo-cards"></div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="acoes" onclick="trocarTab('acoes')">Ações por produto</div>
+      <div class="tab" data-tab="gantt" onclick="trocarTab('gantt')">Cronograma Gantt</div>
+      <div class="tab" data-tab="executores" onclick="trocarTab('executores')">Carga por executor</div>
+    </div>
+
+    <!-- Tab: Ações -->
+    <div id="tab-acoes">
+      <div id="produtos-gerente"></div>
+    </div>
+
+    <!-- Tab: Gantt -->
+    <div id="tab-gantt" style="display:none">
+      <div class="gantt-wrap" id="gantt-container"></div>
+    </div>
+
+    <!-- Tab: Executores -->
+    <div id="tab-executores" style="display:none">
+      <div id="executores-container"></div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal Nova Ação -->
+<div class="modal-overlay" id="modal" onclick="fecharModalFora(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Nova ação</div>
+    <div class="form-grid">
+      <div class="field full">
+        <label>Produto vinculado</label>
+        <select id="f-produto"><option value="">—</option></select>
+      </div>
+      <div class="field full">
+        <label>Título da ação</label>
+        <input type="text" id="f-titulo" placeholder="Ex: Levantar indicadores de matrícula 2025">
+      </div>
+      <div class="field full">
+        <label>Descrição</label>
+        <textarea id="f-descricao" placeholder="Detalhe o que será feito..."></textarea>
+      </div>
+      <div class="field">
+        <label>Executor (bolsista / analista)</label>
+        <select id="f-executor"><option value="">Não definido</option></select>
+      </div>
+      <div class="field">
+        <label>Fase</label>
+        <select id="f-fase"></select>
+      </div>
+      <div class="field">
+        <label>Mês início</label>
+        <select id="f-mes-inicio"></select>
+      </div>
+      <div class="field">
+        <label>Mês fim</label>
+        <select id="f-mes-fim"></select>
+      </div>
+      <div class="field">
+        <label>Horas estimadas</label>
+        <input type="number" id="f-horas" min="1" max="500" placeholder="Ex: 16">
+      </div>
+      <div class="field">
+        <label>Complexidade</label>
+        <select id="f-complexidade"></select>
+      </div>
+      <div class="field">
+        <label>Prioridade</label>
+        <select id="f-prioridade">
+          <option value="baixa">Baixa</option>
+          <option value="media" selected>Média</option>
+          <option value="alta">Alta</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="f-status"></select>
+      </div>
+      <div class="field">
+        <label>% Avanço</label>
+        <input type="number" id="f-percentual" min="0" max="100" placeholder="0">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarAcao()">Salvar ação</button>
+    </div>
+  </div>
+</div>
+
+<footer>SEGAPE · Planejamento de Publicações · v3.0 — <a href="index.html" style="color:inherit">Início</a></footer>
+
+<script src="assets/dados.js"></script>
+<script>
+let gerenteAtual = null;
+let editandoId = null;
+let tabAtiva = 'acoes';
+
+function init() {
+  // Popula select de gerentes
+  const sel = document.getElementById('gerente-select');
+  getGerentes().forEach(g => {
+    const o = document.createElement('option');
+    o.value = g.id;
+    o.textContent = g.nome + ' (' + g.papel + ')';
+    sel.appendChild(o);
+  });
+
+  // Popula modal selects
+  popularModalSelects();
+}
+
+function popularModalSelects() {
+  // executores
+  const fExec = document.getElementById('f-executor');
+  getBolsistasEExecutores().forEach(e => {
+    const o = document.createElement('option');
+    o.value = e.id;
+    o.textContent = e.nome + ' · ' + e.vinculo;
+    fExec.appendChild(o);
+  });
+
+  // fases
+  const fFase = document.getElementById('f-fase');
+  Object.entries(FASES).forEach(([k,v]) => {
+    const o = document.createElement('option'); o.value=k; o.textContent=v.label; fFase.appendChild(o);
+  });
+
+  // complexidade
+  const fCx = document.getElementById('f-complexidade');
+  Object.entries(COMPLEXIDADE).forEach(([k,v]) => {
+    const o = document.createElement('option'); o.value=k; o.textContent=v.label; fCx.appendChild(o);
+  });
+
+  // status
+  const fSt = document.getElementById('f-status');
+  Object.entries(STATUS_LABELS).forEach(([k,v]) => {
+    const o = document.createElement('option'); o.value=k; o.textContent=v.label; fSt.appendChild(o);
+  });
+
+  // meses
+  ['f-mes-inicio','f-mes-fim'].forEach(id => {
+    const sel = document.getElementById(id);
+    MESES_FULL.forEach((m,i) => {
+      const o = document.createElement('option'); o.value=i+1; o.textContent=m; sel.appendChild(o);
+    });
+  });
+}
+
+function trocarGerente() {
+  const val = document.getElementById('gerente-select').value;
+  if (!val) {
+    document.getElementById('sem-gerente').style.display = 'block';
+    document.getElementById('painel-gerente').style.display = 'none';
+    return;
+  }
+  gerenteAtual = val;
+  document.getElementById('sem-gerente').style.display = 'none';
+  document.getElementById('painel-gerente').style.display = 'block';
+  renderPainel();
+}
+
+function trocarTab(tab) {
+  tabAtiva = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  ['acoes','gantt','executores'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = (t === tab) ? 'block' : 'none';
+  });
+  if (tab === 'gantt') renderGantt();
+  if (tab === 'executores') renderExecutores();
+}
+
+function renderPainel() {
+  renderResumo();
+  renderAcoesPorProduto();
+  if (tabAtiva === 'gantt') renderGantt();
+  if (tabAtiva === 'executores') renderExecutores();
+}
+
+function renderResumo() {
+  const r = calcularResumo();
+  const produtosDoGerente = getProdutosPorGerente(gerenteAtual);
+  const acoesGerente = getData().acoes.filter(a => a.gerente_id === gerenteAtual);
+  const horasG = acoesGerente.reduce((s,a) => s+(a.horas_estimadas||0), 0);
+  const conclG = acoesGerente.filter(a=>a.status==='concluido').length;
+  const pctG = acoesGerente.length ? Math.round(acoesGerente.reduce((s,a)=>s+(a.percentual||0),0)/acoesGerente.length) : 0;
+
+  document.getElementById('resumo-cards').innerHTML = `
+    <div class="rcard"><div class="rcard-n">${produtosDoGerente.length}</div><div class="rcard-l">Produtos</div></div>
+    <div class="rcard"><div class="rcard-n">${acoesGerente.length}</div><div class="rcard-l">Ações planejadas</div></div>
+    <div class="rcard"><div class="rcard-n">${horasG}h</div><div class="rcard-l">Horas estimadas</div></div>
+    <div class="rcard"><div class="rcard-n">${conclG}</div><div class="rcard-l">Concluídas</div></div>
+    <div class="rcard"><div class="rcard-n">${pctG}%</div><div class="rcard-l">Avanço médio</div></div>
+  `;
+}
+
+function renderAcoesPorProduto() {
+  const produtos = getProdutosPorGerente(gerenteAtual);
+  const data = getData();
+  let html = '';
+
+  produtos.forEach(p => {
+    const acoes = data.acoes.filter(a => a.produto_id === p.id && a.gerente_id === gerenteAtual);
+    const tipo = TIPOS_PRODUTO[p.tipo] || { cor: '#888' };
+    const totalH = acoes.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+
+    html += `
+      <div style="margin-bottom:1.75rem">
+        <div class="section-header">
+          <div>
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem">
+              <div style="width:10px;height:10px;border-radius:50%;background:${tipo.cor}"></div>
+              <span style="font-family:Syne,sans-serif;font-weight:700;font-size:0.95rem;color:var(--cinza-escuro)">${p.nome}</span>
+              ${tipoProdutoBadgeHTML(p.tipo)}
+            </div>
+            <div style="font-size:0.76rem;color:var(--cinza);margin-left:1.3rem">${p.descricao} · ${acoes.length} ação(ões) · ${totalH}h estimadas</div>
+          </div>
+          <button class="btn btn-primary" onclick="abrirModal('${p.id}')">+ Ação</button>
+        </div>
+
+        ${acoes.length === 0 ? `<div class="empty-state" style="background:var(--branco);border:1px solid var(--borda);border-radius:10px;padding:1.5rem">Nenhuma ação cadastrada para este produto</div>` : `
+        <table class="acoes-table">
+          <thead>
+            <tr>
+              <th>Ação</th>
+              <th>Executor</th>
+              <th>Fase</th>
+              <th>Complexidade</th>
+              <th>Período</th>
+              <th>Horas</th>
+              <th>Avanço</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${acoes.map(a => {
+              const exec = a.executor_id ? getMembroEquipe(a.executor_id) : null;
+              return `<tr>
+                <td>
+                  <div class="acao-titulo">${a.titulo}</div>
+                  ${a.descricao ? `<div class="acao-desc">${a.descricao}</div>` : ''}
+                </td>
+                <td>
+                  ${exec ? `<div style="font-size:0.78rem;font-weight:500">${exec.nome.split(' ').slice(0,2).join(' ')}</div>
+                  <div>${vincBadgeHTML(exec.vinculo)}</div>` : '<span style="color:var(--cinza);font-size:0.75rem">—</span>'}
+                </td>
+                <td>${faseBadgeHTML(a.fase)}</td>
+                <td>${complexidadeBadgeHTML(a.complexidade)}</td>
+                <td style="white-space:nowrap;font-size:0.78rem">${mesToNome(a.mes_inicio)} → ${mesToNome(a.mes_fim)}</td>
+                <td style="font-size:0.82rem;font-weight:500;color:var(--azul)">${a.horas_estimadas || '—'}h</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:4px">
+                    <div class="progress-bar"><div class="progress-fill" style="width:${a.percentual||0}%"></div></div>
+                    <span style="font-size:0.75rem;color:var(--cinza)">${a.percentual||0}%</span>
+                  </div>
+                </td>
+                <td>${statusBadgeHTML(a.status)}</td>
+                <td>
+                  <div style="display:flex;gap:4px">
+                    <button class="btn btn-outline" style="font-size:0.7rem;padding:0.2rem 0.5rem" onclick="editarAcao('${a.id}')">✏</button>
+                    <button class="btn btn-danger" onclick="confirmarRemover('${a.id}')">✕</button>
+                  </div>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>`}
+      </div>
+    `;
+  });
+
+  document.getElementById('produtos-gerente').innerHTML = html;
+}
+
+function renderGantt() {
+  const produtos = getProdutosPorGerente(gerenteAtual);
+  const data = getData();
+
+  let html = `
+    <div class="gantt-header-row">
+      <div class="gantt-col-label">Ação / Produto</div>
+      <div class="gantt-meses-header">
+        ${MESES.map(m => `<div class="gantt-mes">${m}</div>`).join('')}
+      </div>
+    </div>
+  `;
+
+  const mesAtual = new Date().getMonth() + 1;
+
+  produtos.forEach(p => {
+    const acoes = data.acoes.filter(a => a.produto_id === p.id && a.gerente_id === gerenteAtual);
+    if (acoes.length === 0) return;
+    const tipo = TIPOS_PRODUTO[p.tipo] || { cor:'#888' };
+
+    // Linha de produto (agrupador)
+    html += `<div style="background:#F0F4FA;border-bottom:1px solid var(--borda);">
+      <div class="gantt-header-row" style="background:transparent">
+        <div style="padding:0.4rem 0.75rem;font-size:0.75rem;font-weight:700;color:${tipo.cor}">${p.nome}</div>
+        <div></div>
+      </div>
+    </div>`;
+
+    acoes.forEach(a => {
+      const exec = a.executor_id ? getMembroEquipe(a.executor_id) : null;
+      const cor = FASES[a.fase]?.cor || '#888';
+      const cells = MESES.map((_,i) => {
+        const mes = i + 1;
+        const ativo = mes >= a.mes_inicio && mes <= a.mes_fim;
+        const ehAtual = mes === mesAtual;
+        return `<div class="gantt-cell ${ativo ? 'ativo' : ''}" style="${ativo ? `background:${cor}` : ''};${ehAtual ? 'box-shadow:inset 0 0 0 1px #C8922A' : ''}"></div>`;
+      }).join('');
+
+      html += `<div class="gantt-row">
+        <div class="gantt-nome">
+          ${a.titulo}
+          <div class="gantt-sub">${exec ? exec.nome.split(' ')[0] : '—'} · ${a.horas_estimadas||0}h · ${COMPLEXIDADE[a.complexidade]?.label||''}</div>
+        </div>
+        <div class="gantt-grid">${cells}</div>
+      </div>`;
+    });
+  });
+
+  document.getElementById('gantt-container').innerHTML = html || '<div class="empty-state" style="padding:2rem">Nenhuma ação cadastrada</div>';
+}
+
+function renderExecutores() {
+  const data = getData();
+  const acoesGerente = data.acoes.filter(a => a.gerente_id === gerenteAtual);
+  const executores = getBolsistasEExecutores();
+
+  let html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">`;
+
+  executores.forEach(e => {
+    const acoes = acoesGerente.filter(a => a.executor_id === e.id);
+    if (acoes.length === 0) return;
+    const horas = acoes.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+
+    html += `<div style="background:var(--branco);border:1px solid var(--borda);border-radius:12px;padding:1.1rem">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.75rem">
+        <div>
+          <div style="font-weight:600;font-size:0.87rem;color:var(--cinza-escuro)">${e.nome}</div>
+          <div style="margin-top:3px">${vincBadgeHTML(e.vinculo)}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:Syne,sans-serif;font-weight:700;font-size:1.3rem;color:var(--azul)">${horas}h</div>
+          <div style="font-size:0.68rem;color:var(--cinza)">${acoes.length} ação(ões)</div>
+        </div>
+      </div>
+      ${acoes.map(a => {
+        const p = getProduto(a.produto_id);
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0;border-top:1px solid var(--borda);font-size:0.76rem">
+          <div>
+            <span style="color:var(--cinza-escuro)">${a.titulo}</span>
+            ${p ? `<div style="font-size:0.68rem;color:var(--cinza)">${p.nome}</div>` : ''}
+          </div>
+          <div style="display:flex;gap:4px;align-items:center;white-space:nowrap;margin-left:8px">
+            <span style="color:var(--azul);font-weight:500">${a.horas_estimadas||0}h</span>
+            ${faseBadgeHTML(a.fase)}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  });
+
+  html += '</div>';
+
+  // executores sem ações
+  const semAtribuicao = executores.filter(e => acoesGerente.filter(a=>a.executor_id===e.id).length === 0);
+  if (semAtribuicao.length > 0) {
+    html += `<div style="margin-top:1.25rem;padding:1rem;background:var(--branco);border:1px solid var(--borda);border-radius:10px">
+      <div style="font-size:0.8rem;color:var(--cinza);margin-bottom:0.5rem;font-weight:600">Sem ações atribuídas</div>
+      <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+        ${semAtribuicao.map(e => `${vincBadgeHTML(e.vinculo)} <span style="font-size:0.76rem">${e.nome.split(' ').slice(0,2).join(' ')}</span>`).join('  ·  ')}
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('executores-container').innerHTML = html;
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+
+function abrirModal(produto_id_pre) {
+  editandoId = null;
+  document.getElementById('modal-title').textContent = 'Nova ação';
+
+  // reset
+  ['f-titulo','f-descricao','f-horas','f-percentual'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-executor').value = '';
+  document.getElementById('f-fase').value = 'planejamento';
+  document.getElementById('f-complexidade').value = 'media';
+  document.getElementById('f-prioridade').value = 'media';
+  document.getElementById('f-status').value = 'planejado';
+  document.getElementById('f-mes-inicio').value = new Date().getMonth() + 1;
+  document.getElementById('f-mes-fim').value = Math.min(12, new Date().getMonth() + 2);
+
+  // produtos do gerente no select
+  const fProd = document.getElementById('f-produto');
+  fProd.innerHTML = '<option value="">Selecione o produto</option>';
+  getProdutosPorGerente(gerenteAtual).forEach(p => {
+    const o = document.createElement('option');
+    o.value = p.id;
+    o.textContent = p.nome;
+    if (p.id === produto_id_pre) o.selected = true;
+    fProd.appendChild(o);
+  });
+
+  document.getElementById('modal').classList.add('open');
+}
+
+function editarAcao(id) {
+  const data = getData();
+  const a = data.acoes.find(x => x.id === id);
+  if (!a) return;
+  editandoId = id;
+  document.getElementById('modal-title').textContent = 'Editar ação';
+
+  const fProd = document.getElementById('f-produto');
+  fProd.innerHTML = '<option value="">Selecione o produto</option>';
+  getProdutosPorGerente(gerenteAtual).forEach(p => {
+    const o = document.createElement('option'); o.value=p.id; o.textContent=p.nome;
+    if (p.id === a.produto_id) o.selected = true;
+    fProd.appendChild(o);
+  });
+
+  document.getElementById('f-titulo').value = a.titulo;
+  document.getElementById('f-descricao').value = a.descricao || '';
+  document.getElementById('f-executor').value = a.executor_id || '';
+  document.getElementById('f-fase').value = a.fase || 'planejamento';
+  document.getElementById('f-complexidade').value = a.complexidade || 'media';
+  document.getElementById('f-prioridade').value = a.prioridade || 'media';
+  document.getElementById('f-status').value = a.status || 'planejado';
+  document.getElementById('f-mes-inicio').value = a.mes_inicio;
+  document.getElementById('f-mes-fim').value = a.mes_fim;
+  document.getElementById('f-horas').value = a.horas_estimadas || '';
+  document.getElementById('f-percentual').value = a.percentual || 0;
+
+  document.getElementById('modal').classList.add('open');
+}
+
+function salvarAcao() {
+  const titulo = document.getElementById('f-titulo').value.trim();
+  const produto_id = document.getElementById('f-produto').value;
+  if (!titulo || !produto_id) { alert('Preencha ao menos o produto e o título da ação.'); return; }
+
+  const campos = {
+    produto_id,
+    gerente_id: gerenteAtual,
+    titulo,
+    descricao: document.getElementById('f-descricao').value.trim(),
+    executor_id: document.getElementById('f-executor').value || null,
+    fase: document.getElementById('f-fase').value,
+    complexidade: document.getElementById('f-complexidade').value,
+    prioridade: document.getElementById('f-prioridade').value,
+    status: document.getElementById('f-status').value,
+    mes_inicio: parseInt(document.getElementById('f-mes-inicio').value),
+    mes_fim: parseInt(document.getElementById('f-mes-fim').value),
+    horas_estimadas: parseInt(document.getElementById('f-horas').value) || 0,
+    percentual: parseInt(document.getElementById('f-percentual').value) || 0,
+  };
+
+  if (editandoId) {
+    atualizarAcao(editandoId, campos);
+  } else {
+    criarAcao(campos);
+  }
+
+  fecharModal();
+  renderPainel();
+}
+
+function confirmarRemover(id) {
+  if (!confirm('Remover esta ação?')) return;
+  removerAcao(id);
+  renderPainel();
+}
+
+function fecharModal() { document.getElementById('modal').classList.remove('open'); }
+function fecharModalFora(e) { if (e.target.id === 'modal') fecharModal(); }
+
+init();
+</script>
+</body>
+</html>

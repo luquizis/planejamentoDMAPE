@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEGAPE — Diretoria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root {
+  --azul:#1B3A6B; --azul-medio:#2E5CA8; --azul-claro:#5B8DD9;
+  --verde:#1D7A55; --dourado:#C8922A; --cinza-escuro:#2C2C2C;
+  --cinza:#5F5F5F; --cinza-claro:#F4F3EF; --branco:#FAFAF8; --borda:rgba(0,0,0,0.09);
+}
+body { font-family:'DM Sans',sans-serif; background:var(--cinza-claro); min-height:100vh; display:flex; flex-direction:column; }
+header { background:var(--azul); padding:1rem 2rem; display:flex; align-items:center; gap:1rem; }
+.logo-sigla { font-family:'Syne',sans-serif; font-weight:800; font-size:1.2rem; color:#E8B84B; }
+.sep { width:1px; height:32px; background:rgba(255,255,255,0.2); margin:0 0.6rem; }
+.logo-nome { font-size:0.7rem; color:rgba(255,255,255,0.5); }
+.nav-back { font-size:0.75rem; color:rgba(255,255,255,0.55); text-decoration:none; }
+.dir-select { margin-left:auto; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:white; font-size:0.78rem; padding:0.35rem 0.6rem; border-radius:6px; cursor:pointer; }
+.dir-select option { background:#1B3A6B; }
+main { flex:1; padding:1.5rem 2rem; max-width:1400px; margin:0 auto; width:100%; }
+
+.tabs { display:flex; gap:0; border-bottom:2px solid var(--borda); margin-bottom:1.5rem; }
+.tab { padding:0.6rem 1.25rem; font-size:0.82rem; font-weight:500; color:var(--cinza); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; }
+.tab.active { color:var(--azul); border-color:var(--azul); font-weight:600; }
+
+.resumo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:0.75rem; margin-bottom:1.5rem; }
+.rcard { background:var(--branco); border:1px solid var(--borda); border-radius:10px; padding:0.9rem 1rem; }
+.rcard-n { font-family:'Syne',sans-serif; font-weight:800; font-size:1.4rem; color:var(--azul); }
+.rcard-l { font-size:0.68rem; color:var(--cinza); text-transform:uppercase; margin-top:2px; }
+
+.acoes-table { width:100%; border-collapse:collapse; background:var(--branco); border-radius:12px; overflow:hidden; border:1px solid var(--borda); font-size:0.81rem; margin-bottom:1.5rem; }
+.acoes-table th { background:#F0F2F6; padding:0.55rem 0.8rem; text-align:left; font-size:0.68rem; font-weight:600; color:var(--cinza); text-transform:uppercase; letter-spacing:0.04em; border-bottom:1px solid var(--borda); }
+.acoes-table td { padding:0.65rem 0.8rem; border-bottom:1px solid var(--borda); vertical-align:middle; }
+.acoes-table tr:last-child td { border-bottom:none; }
+.progress-bar { width:65px; height:7px; background:#E5E5E0; border-radius:4px; overflow:hidden; display:inline-block; vertical-align:middle; margin-right:4px; }
+.progress-fill { height:100%; border-radius:4px; background:var(--azul-medio); }
+
+.btn { padding:0.4rem 0.85rem; border-radius:7px; font-size:0.78rem; font-weight:500; cursor:pointer; border:none; }
+.btn-approve { background:#E0F5ED; color:#1D7A55; border:1px solid #1D7A5540; }
+.btn-outline { background:transparent; border:1.5px solid var(--borda); color:var(--cinza-escuro); }
+.empty-state { text-align:center; padding:2.5rem; color:var(--cinza); font-size:0.85rem; background:var(--branco); border:1px solid var(--borda); border-radius:10px; }
+
+/* PRODUTOS por coordenação */
+.coord-section { margin-bottom:2rem; }
+.coord-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem; padding:0.6rem 0.9rem; background:var(--branco); border:1px solid var(--borda); border-radius:10px; }
+.coord-sigla { font-family:'Syne',sans-serif; font-weight:800; font-size:0.9rem; color:var(--azul); background:#E8EEFA; padding:0.2rem 0.6rem; border-radius:6px; }
+.coord-nome-full { font-size:0.78rem; color:var(--cinza); }
+.coord-stats { margin-left:auto; display:flex; gap:1.25rem; }
+.cs { text-align:center; }
+.cs-n { font-family:'Syne',sans-serif; font-weight:700; font-size:1rem; color:var(--azul-medio); }
+.cs-l { font-size:0.63rem; color:var(--cinza); }
+
+.gantt-wrap { background:var(--branco); border:1px solid var(--borda); border-radius:12px; overflow:auto; }
+.gantt-header-row { display:grid; grid-template-columns:240px 70px 70px 1fr; border-bottom:1px solid var(--borda); }
+.gantt-col-label { padding:0.5rem 0.6rem; font-size:0.66rem; color:var(--cinza); font-weight:600; text-transform:uppercase; }
+.gantt-meses-header { display:grid; grid-template-columns:repeat(12,1fr); }
+.gantt-mes { font-size:0.62rem; color:var(--cinza); text-align:center; padding:0.35rem 0; border-left:1px solid var(--borda); }
+.gantt-row { display:grid; grid-template-columns:240px 70px 70px 1fr; border-bottom:1px solid var(--borda); align-items:center; }
+.gantt-nome { padding:0.35rem 0.6rem; font-size:0.74rem; color:var(--cinza-escuro); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.gantt-sub { font-size:0.61rem; color:var(--cinza); }
+.gantt-cell-label { padding:0.35rem 0.5rem; font-size:0.66rem; color:var(--cinza); }
+.gantt-grid { display:grid; grid-template-columns:repeat(12,1fr); }
+.gantt-cell { height:16px; border-left:1px solid var(--borda); }
+.prod-group { background:#F0F2F6; padding:0.4rem 0.6rem; font-size:0.75rem; font-weight:700; border-bottom:1px solid var(--borda); }
+
+footer { padding:0.75rem 2rem; font-size:0.7rem; color:rgba(0,0,0,0.28); text-align:center; border-top:1px solid var(--borda); }
+</style>
+</head>
+<body>
+<header>
+  <a class="nav-back" href="index.html">← Voltar</a>
+  <div class="sep"></div>
+  <div class="logo-sigla">SEGAPE</div>
+  <div class="sep"></div>
+  <div class="logo-nome">Diretoria · Visão consolidada por coordenação</div>
+  <select class="dir-select" id="dir-select" onchange="trocarDir()">
+    <option value="">Selecione a diretoria</option>
+  </select>
+</header>
+
+<main>
+  <div id="sem-dir" style="text-align:center;padding:4rem;color:var(--cinza)">
+    <div style="font-size:2rem;margin-bottom:0.5rem">🏛</div>
+    <div>Selecione a diretoria para ver o painel consolidado</div>
+  </div>
+
+  <div id="painel-dir" style="display:none">
+    <div class="resumo-grid" id="resumo-cards"></div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="coordenacoes" onclick="trocarTab('coordenacoes')">Por coordenação</div>
+      <div class="tab" data-tab="gantt" onclick="trocarTab('gantt')">Gantt geral</div>
+      <div class="tab" data-tab="aprovacao" onclick="trocarTab('aprovacao')">Aguardando aprovação</div>
+    </div>
+
+    <div id="tab-coordenacoes"><div id="coord-container"></div></div>
+    <div id="tab-gantt" style="display:none"><div class="gantt-wrap" id="gantt-container"></div></div>
+    <div id="tab-aprovacao" style="display:none"><div id="aprov-container"></div></div>
+  </div>
+</main>
+
+<footer>SEGAPE · Diretoria · v3.0 — <a href="index.html" style="color:inherit">Início</a></footer>
+
+<script src="assets/dados.js"></script>
+<script>
+let dirAtual = null;
+
+function init() {
+  const sel = document.getElementById('dir-select');
+  HIERARQUIA.diretorias.forEach(d => {
+    const o = document.createElement('option');
+    o.value = d.id; o.textContent = d.sigla + ' — ' + d.diretor.split(' ')[0];
+    sel.appendChild(o);
+  });
+}
+
+function trocarDir() {
+  dirAtual = document.getElementById('dir-select').value;
+  if (!dirAtual) {
+    document.getElementById('sem-dir').style.display='block';
+    document.getElementById('painel-dir').style.display='none';
+    return;
+  }
+  document.getElementById('sem-dir').style.display='none';
+  document.getElementById('painel-dir').style.display='block';
+  renderPainel();
+}
+
+function trocarTab(tab) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  ['coordenacoes','gantt','aprovacao'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display=(t===tab)?'block':'none';
+  });
+  if(tab==='gantt') renderGantt();
+  if(tab==='aprovacao') renderAprovacao();
+}
+
+function getCoordsDaDir() {
+  return HIERARQUIA.coordenacoes.filter(c=>c.diretoria_id===dirAtual);
+}
+function getProdutosDaDir() {
+  const coords = getCoordsDaDir().map(c=>c.id);
+  return PRODUTOS_CATALOGO.filter(p=>coords.includes(p.coordenacao_id));
+}
+function getAcoesDaDir() {
+  const prodIds = getProdutosDaDir().map(p=>p.id);
+  return getData().acoes.filter(a=>prodIds.includes(a.produto_id));
+}
+
+function renderPainel() {
+  const acoes = getAcoesDaDir();
+  const horas = acoes.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+  const pendDir = acoes.filter(a=>a.aprovacao_dir==='pendente'&&a.aprovacao_coord==='aprovado').length;
+  const pct = acoes.length?Math.round(acoes.reduce((s,a)=>s+(a.percentual||0),0)/acoes.length):0;
+
+  document.getElementById('resumo-cards').innerHTML = `
+    <div class="rcard"><div class="rcard-n">${getProdutosDaDir().length}</div><div class="rcard-l">Produtos</div></div>
+    <div class="rcard"><div class="rcard-n">${acoes.length}</div><div class="rcard-l">Ações totais</div></div>
+    <div class="rcard"><div class="rcard-n">${horas}h</div><div class="rcard-l">Horas estimadas</div></div>
+    <div class="rcard"><div class="rcard-n" style="${pendDir>0?'color:var(--dourado)':''}">${pendDir}</div><div class="rcard-l">Ag. aprovação dir.</div></div>
+    <div class="rcard"><div class="rcard-n">${acoes.filter(a=>a.status==='concluido').length}</div><div class="rcard-l">Concluídas</div></div>
+    <div class="rcard"><div class="rcard-n">${pct}%</div><div class="rcard-l">Avanço médio</div></div>
+  `;
+  renderCoords();
+}
+
+function renderCoords() {
+  const coords = getCoordsDaDir();
+  const data = getData();
+  let html = '';
+
+  coords.forEach(c => {
+    const produtos = PRODUTOS_CATALOGO.filter(p=>p.coordenacao_id===c.id);
+    const acoes = data.acoes.filter(a=>produtos.map(p=>p.id).includes(a.produto_id));
+    const horas = acoes.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+    const pct = acoes.length?Math.round(acoes.reduce((s,a)=>s+(a.percentual||0),0)/acoes.length):0;
+
+    html += `<div class="coord-section">
+      <div class="coord-header">
+        <span class="coord-sigla">${c.sigla}</span>
+        <div>
+          <div style="font-size:0.82rem;font-weight:600;color:var(--cinza-escuro)">${c.nome}</div>
+          <div class="coord-nome-full">${c.coordenador}</div>
+        </div>
+        <div class="coord-stats">
+          <div class="cs"><div class="cs-n">${produtos.length}</div><div class="cs-l">produtos</div></div>
+          <div class="cs"><div class="cs-n">${acoes.length}</div><div class="cs-l">ações</div></div>
+          <div class="cs"><div class="cs-n">${horas}h</div><div class="cs-l">horas</div></div>
+          <div class="cs"><div class="cs-n">${pct}%</div><div class="cs-l">avanço</div></div>
+        </div>
+      </div>
+
+      ${produtos.map(p => {
+        const pac = data.acoes.filter(a=>a.produto_id===p.id);
+        if (!pac.length) return '';
+        const tipo = TIPOS_PRODUTO[p.tipo]||{cor:'#888'};
+        return `<div style="margin-bottom:0.75rem">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;margin-left:0.5rem">
+            <div style="width:8px;height:8px;border-radius:50%;background:${tipo.cor}"></div>
+            <span style="font-size:0.82rem;font-weight:600;color:var(--cinza-escuro)">${p.nome}</span>
+            ${tipoProdutoBadgeHTML(p.tipo)}
+          </div>
+          <table class="acoes-table">
+            <thead><tr>
+              <th>Ação</th><th>Gerente</th><th>Executor</th><th>Fase</th><th>Cx</th>
+              <th>Período</th><th>Horas</th><th>Avanço</th><th>Status</th><th>Coord.</th><th>Dir.</th>
+            </tr></thead>
+            <tbody>
+              ${pac.map(a=>{
+                const g=getMembroEquipe(a.gerente_id),ex=a.executor_id?getMembroEquipe(a.executor_id):null;
+                const apDir = a.aprovacao_dir==='aprovado'
+                  ? `<span style="color:var(--verde);font-size:0.72rem">✓</span>`
+                  : a.aprovacao_dir==='rejeitado'
+                    ? `<span style="color:#B34A2A;font-size:0.72rem">✗</span>`
+                    : (a.aprovacao_coord==='aprovado'
+                      ? `<button class="btn btn-approve" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="aprovarDir('${a.id}')">✓</button>`
+                      : `<span style="font-size:0.7rem;color:var(--cinza)">ag.coord</span>`);
+                const apCoord = a.aprovacao_coord==='aprovado'
+                  ? `<span style="color:var(--verde);font-size:0.72rem">✓</span>`
+                  : `<span style="color:var(--dourado);font-size:0.7rem">pend.</span>`;
+                return `<tr>
+                  <td><div style="font-weight:500">${a.titulo}</div></td>
+                  <td style="font-size:0.75rem">${g?.nome.split(' ')[0]||'—'}</td>
+                  <td style="font-size:0.75rem">${ex?ex.nome.split(' ').slice(0,2).join(' '):'—'}</td>
+                  <td>${faseBadgeHTML(a.fase)}</td>
+                  <td>${complexidadeBadgeHTML(a.complexidade)}</td>
+                  <td style="font-size:0.75rem;white-space:nowrap">${mesToNome(a.mes_inicio)}→${mesToNome(a.mes_fim)}</td>
+                  <td style="font-weight:500;color:var(--azul);font-size:0.8rem">${a.horas_estimadas||0}h</td>
+                  <td><div style="display:flex;align-items:center;gap:3px">
+                    <div class="progress-bar"><div class="progress-fill" style="width:${a.percentual||0}%"></div></div>
+                    <span style="font-size:0.72rem;color:var(--cinza)">${a.percentual||0}%</span>
+                  </div></td>
+                  <td>${statusBadgeHTML(a.status)}</td>
+                  <td style="text-align:center">${apCoord}</td>
+                  <td style="text-align:center">${apDir}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`;
+      }).join('')}
+    </div>`;
+  });
+
+  document.getElementById('coord-container').innerHTML = html || '<div class="empty-state">Nenhuma ação cadastrada</div>';
+}
+
+function aprovarDir(id) {
+  atualizarAcao(id, { aprovacao_dir: 'aprovado' });
+  renderPainel();
+}
+
+function renderGantt() {
+  const coords = getCoordsDaDir();
+  const data = getData();
+  const mesAtual = new Date().getMonth()+1;
+
+  let html = `<div class="gantt-header-row">
+    <div class="gantt-col-label">Ação</div>
+    <div class="gantt-col-label">Gerente</div>
+    <div class="gantt-col-label">Horas</div>
+    <div class="gantt-meses-header">${MESES.map(m=>`<div class="gantt-mes">${m}</div>`).join('')}</div>
+  </div>`;
+
+  coords.forEach(c => {
+    const produtos = PRODUTOS_CATALOGO.filter(p=>p.coordenacao_id===c.id);
+    produtos.forEach(p => {
+      const acoes = data.acoes.filter(a=>a.produto_id===p.id);
+      if(!acoes.length) return;
+      const tipo = TIPOS_PRODUTO[p.tipo]||{cor:'#888'};
+      html += `<div class="prod-group" style="color:${tipo.cor}">${c.sigla} · ${p.nome}</div>`;
+      acoes.forEach(a => {
+        const g=getMembroEquipe(a.gerente_id);
+        const cor=FASES[a.fase]?.cor||'#888';
+        const cells=MESES.map((_,i)=>{
+          const mes=i+1,ativo=mes>=a.mes_inicio&&mes<=a.mes_fim;
+          return `<div class="gantt-cell ${ativo?'ativo':''}" style="${ativo?`background:${cor}`:''};${mes===mesAtual?'box-shadow:inset 0 0 0 1px #C8922A':''}"></div>`;
+        }).join('');
+        html += `<div class="gantt-row">
+          <div class="gantt-nome">${a.titulo}<div class="gantt-sub">${COMPLEXIDADE[a.complexidade]?.label||''}</div></div>
+          <div class="gantt-cell-label">${g?.nome.split(' ')[0]||'—'}</div>
+          <div class="gantt-cell-label" style="font-weight:600;color:var(--azul)">${a.horas_estimadas||0}h</div>
+          <div class="gantt-grid">${cells}</div>
+        </div>`;
+      });
+    });
+  });
+
+  document.getElementById('gantt-container').innerHTML = html;
+}
+
+function renderAprovacao() {
+  const pendentes = getAcoesDaDir().filter(a=>a.aprovacao_coord==='aprovado'&&a.aprovacao_dir==='pendente');
+  if(!pendentes.length) {
+    document.getElementById('aprov-container').innerHTML = '<div class="empty-state">Nenhuma ação pendente de aprovação da diretoria ✓</div>';
+    return;
+  }
+  let html = `<div style="margin-bottom:0.5rem;font-size:0.82rem;color:var(--cinza)">${pendentes.length} ação(ões) validadas pela coordenação aguardando aprovação da diretoria</div>
+  <table class="acoes-table">
+    <thead><tr><th>Ação</th><th>Produto</th><th>Gerente</th><th>Executor</th><th>Horas</th><th>Complexidade</th><th>Período</th><th>Aprovar</th></tr></thead>
+    <tbody>
+      ${pendentes.map(a=>{
+        const p=getProduto(a.produto_id),g=getMembroEquipe(a.gerente_id),ex=a.executor_id?getMembroEquipe(a.executor_id):null;
+        return `<tr>
+          <td><div style="font-weight:500">${a.titulo}</div></td>
+          <td style="font-size:0.77rem">${p?.nome||'—'}</td>
+          <td style="font-size:0.77rem">${g?.nome.split(' ')[0]||'—'}</td>
+          <td style="font-size:0.77rem">${ex?ex.nome.split(' ').slice(0,2).join(' '):'—'}</td>
+          <td style="font-weight:500;color:var(--azul)">${a.horas_estimadas||0}h</td>
+          <td>${complexidadeBadgeHTML(a.complexidade)}</td>
+          <td style="font-size:0.77rem;white-space:nowrap">${mesToNome(a.mes_inicio)} → ${mesToNome(a.mes_fim)}</td>
+          <td><button class="btn btn-approve" onclick="aprovarDir('${a.id}')">✓ Aprovar</button></td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
+  document.getElementById('aprov-container').innerHTML = html;
+}
+
+init();
+</script>
+</body>
+</html>
