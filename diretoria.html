@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SEGAPE — Diretoria</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--azul:#1B3A6B;--azm:#2E5CA8;--verde:#1D7A55;--dou:#C8922A;--douc:#E8B84B;--ce:#2C2C2C;--cz:#5F5F5F;--cl:#F4F3EF;--br:#FAFAF8;--bd:rgba(0,0,0,0.09)}
+body{font-family:'DM Sans',sans-serif;background:var(--cl);min-height:100vh;display:flex;flex-direction:column}
+header{background:var(--azul);padding:.9rem 2rem;display:flex;align-items:center;gap:.75rem}
+.sigla{font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;color:var(--douc)}
+.sep{width:1px;height:28px;background:rgba(255,255,255,.2);margin:0 .5rem}
+.subt{font-size:.68rem;color:rgba(255,255,255,.5)}
+.nav-back{font-size:.72rem;color:rgba(255,255,255,.55);text-decoration:none}
+select.sel{margin-left:auto;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:white;font-size:.78rem;padding:.32rem .6rem;border-radius:6px;cursor:pointer}
+select.sel option{background:var(--azul)}
+main{flex:1;padding:1.25rem 2rem;max-width:1400px;margin:0 auto;width:100%}
+.kcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.6rem;margin-bottom:1.25rem}
+.kc{background:var(--br);border:1px solid var(--bd);border-radius:10px;padding:.8rem .9rem}
+.kc-n{font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;color:var(--azul)}
+.kc-l{font-size:.67rem;color:var(--cz);text-transform:uppercase;margin-top:2px}
+.kc.alert .kc-n{color:var(--dou)}
+.tabs{display:flex;border-bottom:2px solid var(--bd);margin-bottom:1.25rem}
+.tab{padding:.55rem 1.1rem;font-size:.8rem;font-weight:500;color:var(--cz);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
+.tab.active{color:var(--azul);border-color:var(--azul);font-weight:600}
+.coord-card{background:var(--br);border:1px solid var(--bd);border-radius:10px;padding:.85rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.75rem}
+.coord-sigla{font-family:'Syne',sans-serif;font-weight:800;font-size:.85rem;color:var(--azm);background:#E8EEFA;padding:.18rem .55rem;border-radius:5px}
+.coord-stats{margin-left:auto;display:flex;gap:1.25rem}
+.cs-n{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--azm)}
+.cs-l{font-size:.62rem;color:var(--cz)}
+table.t{width:100%;border-collapse:collapse;background:var(--br);border-radius:10px;overflow:hidden;border:1px solid var(--bd);font-size:.78rem;margin-bottom:1.25rem}
+table.t th{background:#F0F2F6;padding:.5rem .7rem;text-align:left;font-size:.66rem;font-weight:600;color:var(--cz);text-transform:uppercase;border-bottom:1px solid var(--bd)}
+table.t td{padding:.55rem .7rem;border-bottom:1px solid var(--bd);vertical-align:middle}
+table.t tr:last-child td{border-bottom:none}
+table.t tr:hover td{background:#F8F8F6}
+.pbar{width:60px;height:6px;background:#E5E5E0;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:3px}
+.pfill{height:100%;border-radius:4px;background:var(--azm)}
+.btn{padding:.32rem .75rem;border-radius:6px;font-size:.74rem;font-weight:500;cursor:pointer;border:none}
+.btn-ok{background:#E0F5ED;color:var(--verde);border:1px solid #1D7A5540}
+.empty{text-align:center;padding:2rem;color:var(--cz);font-size:.82rem;background:var(--br);border:1px solid var(--bd);border-radius:10px;margin-bottom:1rem}
+.prod-hdr{font-size:.76rem;font-weight:700;padding:.35rem .7rem;margin-left:.5rem;margin-bottom:.3rem;color:var(--cz)}
+.gantt-wrap{background:var(--br);border:1px solid var(--bd);border-radius:10px;overflow:auto}
+.gh-row{display:grid;grid-template-columns:230px 65px 65px 1fr;border-bottom:1px solid var(--bd)}
+.gc-lbl{padding:.4rem .55rem;font-size:.64rem;font-weight:600;color:var(--cz);text-transform:uppercase}
+.gm-hdr{display:grid;grid-template-columns:repeat(12,1fr)}
+.gm-lbl{font-size:.59rem;color:var(--cz);text-align:center;padding:.32rem 0;border-left:1px solid var(--bd)}
+.g-row{display:grid;grid-template-columns:230px 65px 65px 1fr;border-bottom:1px solid var(--bd);align-items:center}
+.g-row:hover{background:#F8F8F6}
+.g-nome{padding:.32rem .55rem;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g-sub{font-size:.59rem;color:var(--cz)}
+.g-lbl{padding:.32rem .45rem;font-size:.65rem;color:var(--cz)}
+.g-grid{display:grid;grid-template-columns:repeat(12,1fr)}
+.g-cell{height:15px;border-left:1px solid var(--bd)}
+.g-grp{background:#F0F2F6;padding:.32rem .55rem;font-size:.72rem;font-weight:700;border-bottom:1px solid var(--bd)}
+.loading{text-align:center;padding:3rem;color:var(--cz)}
+footer{padding:.65rem 2rem;font-size:.68rem;color:rgba(0,0,0,.28);text-align:center;border-top:1px solid var(--bd)}
+</style>
+</head>
+<body>
+<header>
+  <a class="nav-back" href="index.html">← Início</a>
+  <div class="sep"></div>
+  <div class="sigla">SEGAPE</div>
+  <div class="sep"></div>
+  <div class="subt">Diretoria · Visão consolidada por coordenação</div>
+  <select class="sel" id="sel-dir" onchange="trocarDir()">
+    <option value="">— Selecione a diretoria —</option>
+  </select>
+</header>
+<main>
+  <div id="state-empty" class="loading">Selecione a diretoria</div>
+  <div id="state-loading" class="loading" style="display:none">⏳ Carregando…</div>
+  <div id="painel" style="display:none">
+    <div class="kcards" id="kcards"></div>
+    <div class="tabs">
+      <div class="tab active" data-tab="coords" onclick="tab('coords')">Por coordenação</div>
+      <div class="tab" data-tab="gantt" onclick="tab('gantt')">Gantt geral</div>
+      <div class="tab" data-tab="aprov" onclick="tab('aprov')">Aguardando aprovação</div>
+    </div>
+    <div id="tab-coords"></div>
+    <div id="tab-gantt" style="display:none"><div class="gantt-wrap" id="gantt"></div></div>
+    <div id="tab-aprov" style="display:none"><div id="aprov-list"></div></div>
+  </div>
+</main>
+<footer>SEGAPE · Diretoria · <a href="index.html" style="color:inherit">Início</a></footer>
+<script src="assets/dados.js"></script>
+<script src="assets/db.js"></script>
+<script>
+let dirId=null, acoes=[], mesAtual=new Date().getMonth()+1;
+
+function init(){
+  const s=document.getElementById('sel-dir');
+  HIERARQUIA.diretorias.forEach(d=>s.insertAdjacentHTML('beforeend',
+    `<option value="${d.id}">${d.sigla} — ${d.diretor.split(' ')[0]}</option>`));
+}
+
+async function trocarDir(){
+  dirId=document.getElementById('sel-dir').value;
+  if(!dirId){show('empty');return;}
+  await carregar();
+  dbEscutar(()=>carregar());
+}
+
+async function carregar(){
+  show('loading');
+  try{
+    const all=await dbListarAcoes();
+    const coords=HIERARQUIA.coordenacoes.filter(c=>c.diretoria_id===dirId).map(c=>c.id);
+    const pids=PRODUTOS_CATALOGO.filter(p=>coords.includes(p.coordenacao_id)).map(p=>p.id);
+    acoes=all.filter(a=>pids.includes(a.produto_id));
+    renderPainel(); show('painel');
+  }catch(e){alert('Erro: '+e.message);show('empty');}
+}
+
+function show(s){
+  ['empty','loading'].forEach(id=>document.getElementById('state-'+id).style.display=(id===s)?'block':'none');
+  document.getElementById('painel').style.display=(s==='painel')?'block':'none';
+}
+
+function getCoords(){ return HIERARQUIA.coordenacoes.filter(c=>c.diretoria_id===dirId); }
+
+function renderPainel(){
+  const h=acoes.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+  const pend=acoes.filter(a=>a.aprovacao_coord==='aprovado'&&a.aprovacao_dir==='pendente').length;
+  const pct=acoes.length?Math.round(acoes.reduce((s,a)=>s+(a.percentual||0),0)/acoes.length):0;
+  const coords=getCoords();
+  const prods=PRODUTOS_CATALOGO.filter(p=>coords.map(c=>c.id).includes(p.coordenacao_id));
+  document.getElementById('kcards').innerHTML=`
+    <div class="kc"><div class="kc-n">${prods.length}</div><div class="kc-l">Produtos</div></div>
+    <div class="kc"><div class="kc-n">${acoes.length}</div><div class="kc-l">Ações</div></div>
+    <div class="kc"><div class="kc-n">${h}h</div><div class="kc-l">Horas estimadas</div></div>
+    <div class="kc ${pend>0?'alert':''}"><div class="kc-n">${pend}</div><div class="kc-l">Ag. aprovação dir.</div></div>
+    <div class="kc"><div class="kc-n">${acoes.filter(a=>a.status==='concluido').length}</div><div class="kc-l">Concluídas</div></div>
+    <div class="kc"><div class="kc-n">${pct}%</div><div class="kc-l">Avanço médio</div></div>
+  `;
+  renderCoords(); renderAprov();
+  if(document.getElementById('tab-gantt').style.display==='block') renderGantt();
+}
+
+function renderCoords(){
+  const coords=getCoords();
+  let html='';
+  coords.forEach(c=>{
+    const prods=PRODUTOS_CATALOGO.filter(p=>p.coordenacao_id===c.id);
+    const ca=acoes.filter(a=>prods.map(p=>p.id).includes(a.produto_id));
+    const h=ca.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+    const pct=ca.length?Math.round(ca.reduce((s,a)=>s+(a.percentual||0),0)/ca.length):0;
+    html+=`<div class="coord-card">
+      <span class="coord-sigla">${c.sigla}</span>
+      <div>
+        <div style="font-size:.82rem;font-weight:600;color:var(--ce)">${c.nome}</div>
+        <div style="font-size:.72rem;color:var(--cz)">${c.coordenador}</div>
+      </div>
+      <div class="coord-stats">
+        <div><div class="cs-n">${prods.length}</div><div class="cs-l">produtos</div></div>
+        <div><div class="cs-n">${ca.length}</div><div class="cs-l">ações</div></div>
+        <div><div class="cs-n">${h}h</div><div class="cs-l">horas</div></div>
+        <div><div class="cs-n">${pct}%</div><div class="cs-l">avanço</div></div>
+      </div>
+    </div>`;
+
+    prods.forEach(p=>{
+      const pa=ca.filter(a=>a.produto_id===p.id);
+      if(!pa.length) return;
+      const tipo=TIPOS_PRODUTO[p.tipo]||{cor:'#888'};
+      html+=`<div class="prod-hdr" style="color:${tipo.cor}">&nbsp;&nbsp;${p.nome} ${tipoBadge(p.tipo)}</div>
+      <table class="t"><thead><tr>
+        <th>Ação</th><th>Gerente</th><th>Executor</th><th>Fase</th><th>Cx</th>
+        <th>Período</th><th>Horas</th><th>Avanço</th><th>Status</th><th>Coord.</th><th>Dir.</th>
+      </tr></thead><tbody>
+      ${pa.map(a=>{
+        const g=getMembroEquipe(a.gerente_id),ex=a.executor_id?getMembroEquipe(a.executor_id):null;
+        const apC=a.aprovacao_coord==='aprovado'?`<span style="color:var(--verde);font-size:.7rem">✓</span>`:`<span style="color:var(--dou);font-size:.7rem">pend.</span>`;
+        const apD=a.aprovacao_dir==='aprovado'
+          ?`<span style="color:var(--verde);font-size:.7rem">✓</span>`
+          :a.aprovacao_coord==='aprovado'
+            ?`<button class="btn btn-ok" style="padding:.18rem .45rem;font-size:.68rem" onclick="aprovarDir('${a.id}')">✓</button>`
+            :`<span style="font-size:.68rem;color:var(--cz)">ag.coord</span>`;
+        return `<tr>
+          <td style="font-weight:500">${a.titulo}</td>
+          <td style="font-size:.73rem">${g?.nome.split(' ')[0]||'—'}</td>
+          <td style="font-size:.73rem">${ex?ex.nome.split(' ').slice(0,2).join(' '):'—'}</td>
+          <td>${faseBadge(a.fase)}</td><td>${complexBadge(a.complexidade)}</td>
+          <td style="font-size:.73rem;white-space:nowrap">${mesToNome(a.mes_inicio)}→${mesToNome(a.mes_fim)}</td>
+          <td style="font-weight:600;color:var(--azul)">${a.horas_estimadas||0}h</td>
+          <td><div style="display:flex;align-items:center;gap:3px">
+            <div class="pbar"><div class="pfill" style="width:${a.percentual||0}%"></div></div>
+            <span style="font-size:.7rem;color:var(--cz)">${a.percentual||0}%</span>
+          </div></td>
+          <td>${statusBadge(a.status)}</td>
+          <td style="text-align:center">${apC}</td>
+          <td style="text-align:center">${apD}</td>
+        </tr>`;
+      }).join('')}
+      </tbody></table>`;
+    });
+  });
+  document.getElementById('tab-coords').innerHTML=html||'<div class="empty">Nenhuma ação cadastrada</div>';
+}
+
+async function aprovarDir(id){
+  try{await dbAtualizarAcao(id,{aprovacao_dir:'aprovado'});await carregar();}
+  catch(e){alert('Erro: '+e.message);}
+}
+
+function renderGantt(){
+  const coords=getCoords();
+  let html=`<div class="gh-row">
+    <div class="gc-lbl">Ação</div><div class="gc-lbl">Gerente</div><div class="gc-lbl">Horas</div>
+    <div class="gm-hdr">${MESES.map(m=>`<div class="gm-lbl">${m}</div>`).join('')}</div>
+  </div>`;
+  coords.forEach(c=>{
+    const prods=PRODUTOS_CATALOGO.filter(p=>p.coordenacao_id===c.id);
+    prods.forEach(p=>{
+      const pa=acoes.filter(a=>a.produto_id===p.id);
+      if(!pa.length) return;
+      const tipo=TIPOS_PRODUTO[p.tipo]||{cor:'#888'};
+      html+=`<div class="g-grp" style="color:${tipo.cor}">${c.sigla} · ${p.nome}</div>`;
+      pa.forEach(a=>{
+        const g=getMembroEquipe(a.gerente_id),cor=FASES[a.fase]?.cor||'#888';
+        const cells=MESES.map((_,i)=>{
+          const m=i+1,at=m>=a.mes_inicio&&m<=a.mes_fim;
+          return `<div class="g-cell" style="${at?`background:${cor}`:''};${m===mesAtual?'box-shadow:inset 0 0 0 1px var(--dou)':''}"></div>`;
+        }).join('');
+        html+=`<div class="g-row">
+          <div class="g-nome">${a.titulo}<div class="g-sub">${COMPLEXIDADE[a.complexidade]?.label||''}</div></div>
+          <div class="g-lbl">${g?.nome.split(' ')[0]||'—'}</div>
+          <div class="g-lbl" style="font-weight:700;color:var(--azul)">${a.horas_estimadas||0}h</div>
+          <div class="g-grid">${cells}</div>
+        </div>`;
+      });
+    });
+  });
+  document.getElementById('gantt').innerHTML=html;
+}
+
+function renderAprov(){
+  const pend=acoes.filter(a=>a.aprovacao_coord==='aprovado'&&a.aprovacao_dir==='pendente');
+  if(!pend.length){document.getElementById('aprov-list').innerHTML='<div class="empty">Nenhuma ação aguardando aprovação ✓</div>';return;}
+  let html=`<div style="font-size:.8rem;color:var(--cz);margin-bottom:.5rem">${pend.length} ação(ões) validadas pela coordenação aguardando aprovação da diretoria</div>
+  <table class="t"><thead><tr><th>Ação</th><th>Produto</th><th>Gerente</th><th>Executor</th><th>Horas</th><th>Cx</th><th>Período</th><th>Aprovar</th></tr></thead><tbody>
+  ${pend.map(a=>{
+    const p=getProduto(a.produto_id),g=getMembroEquipe(a.gerente_id),ex=a.executor_id?getMembroEquipe(a.executor_id):null;
+    return `<tr>
+      <td style="font-weight:500">${a.titulo}</td>
+      <td style="font-size:.73rem">${p?.nome||'—'}</td>
+      <td style="font-size:.73rem">${g?.nome.split(' ')[0]||'—'}</td>
+      <td style="font-size:.73rem">${ex?ex.nome.split(' ').slice(0,2).join(' '):'—'}</td>
+      <td style="font-weight:600;color:var(--azul)">${a.horas_estimadas||0}h</td>
+      <td>${complexBadge(a.complexidade)}</td>
+      <td style="font-size:.73rem;white-space:nowrap">${mesToNome(a.mes_inicio)}→${mesToNome(a.mes_fim)}</td>
+      <td><button class="btn btn-ok" onclick="aprovarDir('${a.id}')">✓ Aprovar</button></td>
+    </tr>`;
+  }).join('')}
+  </tbody></table>`;
+  document.getElementById('aprov-list').innerHTML=html;
+}
+
+function tab(t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));
+  ['coords','gantt','aprov'].forEach(x=>document.getElementById('tab-'+x).style.display=(x===t)?'block':'none');
+  if(t==='gantt') renderGantt();
+}
+init();
+</script>
+</body>
+</html>

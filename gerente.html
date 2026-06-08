@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEGAPE — Gerente de Projeto</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--azul:#1B3A6B;--azm:#2E5CA8;--azc:#5B8DD9;--verde:#1D7A55;--dou:#C8922A;--douc:#E8B84B;--ce:#2C2C2C;--cz:#5F5F5F;--cl:#F4F3EF;--br:#FAFAF8;--bd:rgba(0,0,0,0.09)}
+body{font-family:'DM Sans',sans-serif;background:var(--cl);min-height:100vh;display:flex;flex-direction:column}
+header{background:var(--azul);padding:.9rem 2rem;display:flex;align-items:center;gap:.75rem}
+.sigla{font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;color:var(--douc)}
+.sep{width:1px;height:28px;background:rgba(255,255,255,.2);margin:0 .5rem}
+.subt{font-size:.68rem;color:rgba(255,255,255,.5)}
+.nav-back{font-size:.72rem;color:rgba(255,255,255,.55);text-decoration:none}
+.hright{margin-left:auto;display:flex;align-items:center;gap:.5rem}
+select.sel{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:white;font-size:.78rem;padding:.32rem .6rem;border-radius:6px;cursor:pointer}
+select.sel option{background:#1B3A6B}
+main{flex:1;padding:1.25rem 2rem;max-width:1400px;margin:0 auto;width:100%}
+.tabs{display:flex;border-bottom:2px solid var(--bd);margin-bottom:1.25rem}
+.tab{padding:.55rem 1.1rem;font-size:.8rem;font-weight:500;color:var(--cz);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab.active{color:var(--azul);border-color:var(--azul);font-weight:600}
+.kcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.6rem;margin-bottom:1.25rem}
+.kc{background:var(--br);border:1px solid var(--bd);border-radius:10px;padding:.8rem .9rem}
+.kc-n{font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;color:var(--azul)}
+.kc-l{font-size:.67rem;color:var(--cz);text-transform:uppercase;margin-top:2px}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.sec-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--ce)}
+.btn{padding:.38rem .85rem;border-radius:7px;font-size:.78rem;font-weight:500;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:.3rem;transition:all .15s}
+.btn-p{background:var(--azul);color:white}.btn-p:hover{background:var(--azm)}
+.btn-o{background:transparent;border:1.5px solid var(--bd);color:var(--ce)}.btn-o:hover{border-color:var(--azm)}
+.btn-pdf{background:#E0F5ED;color:var(--verde);border:1px solid #1D7A5540}
+.btn-del{background:transparent;border:1px solid #ddd;color:#B34A2A;font-size:.7rem;padding:.2rem .5rem}
+.btn-edit{background:transparent;border:1.5px solid var(--bd);color:var(--cz);font-size:.7rem;padding:.2rem .5rem}
+table.t{width:100%;border-collapse:collapse;background:var(--br);border-radius:10px;overflow:hidden;border:1px solid var(--bd);font-size:.8rem;margin-bottom:1.5rem}
+table.t th{background:#F0F2F6;padding:.5rem .75rem;text-align:left;font-size:.67rem;font-weight:600;color:var(--cz);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--bd)}
+table.t td{padding:.6rem .75rem;border-bottom:1px solid var(--bd);vertical-align:middle}
+table.t tr:last-child td{border-bottom:none}
+table.t tr:hover td{background:#F8F8F6}
+.pbar{width:72px;height:7px;background:#E5E5E0;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:3px}
+.pfill{height:100%;border-radius:4px;background:var(--azm)}
+.empty{text-align:center;padding:2rem;color:var(--cz);font-size:.82rem;background:var(--br);border:1px solid var(--bd);border-radius:10px}
+.prod-block{margin-bottom:1.75rem}
+.prod-label{display:flex;align-items:center;gap:.45rem;margin-bottom:.5rem}
+.prod-dot{width:9px;height:9px;border-radius:50%}
+.prod-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:var(--ce)}
+.prod-meta{font-size:.72rem;color:var(--cz);margin-left:1.1rem;margin-bottom:.4rem}
+/* Gantt */
+.gantt-wrap{background:var(--br);border:1px solid var(--bd);border-radius:10px;overflow:auto}
+.gh-row{display:grid;grid-template-columns:220px 1fr;border-bottom:1px solid var(--bd)}
+.gc-label{padding:.45rem .65rem;font-size:.66rem;font-weight:600;color:var(--cz);text-transform:uppercase}
+.gm-hdr{display:grid;grid-template-columns:repeat(12,1fr)}
+.gm-lbl{font-size:.61rem;color:var(--cz);text-align:center;padding:.35rem 0;border-left:1px solid var(--bd)}
+.g-row{display:grid;grid-template-columns:220px 1fr;border-bottom:1px solid var(--bd);align-items:center}
+.g-row:last-child{border-bottom:none}
+.g-row:hover{background:#F8F8F6}
+.g-nome{padding:.35rem .65rem;font-size:.74rem;color:var(--ce);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-sub{font-size:.61rem;color:var(--cz)}
+.g-grid{display:grid;grid-template-columns:repeat(12,1fr)}
+.g-cell{height:17px;border-left:1px solid var(--bd)}
+.g-group{background:#F0F2F6;padding:.35rem .65rem;font-size:.73rem;font-weight:700;border-bottom:1px solid var(--bd)}
+/* Executores */
+.exec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.exec-card{background:var(--br);border:1px solid var(--bd);border-radius:10px;padding:1rem}
+.exec-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:.6rem}
+.exec-h{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--azul)}
+.exec-item{display:flex;justify-content:space-between;align-items:center;padding:.35rem 0;border-top:1px solid var(--bd);font-size:.74rem}
+/* Modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:center;justify-content:center;padding:1rem}
+.overlay.open{display:flex}
+.modal{background:var(--br);border-radius:12px;padding:1.75rem;width:100%;max-width:560px;max-height:92vh;overflow-y:auto}
+.m-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--azul);margin-bottom:1.1rem}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+.fgrid .full{grid-column:1/-1}
+.field label{display:block;font-size:.7rem;font-weight:600;color:var(--cz);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.25rem}
+.field input,.field select,.field textarea{width:100%;border:1.5px solid var(--bd);border-radius:7px;padding:.45rem .65rem;font-size:.82rem;font-family:'DM Sans',sans-serif;background:white;color:var(--ce)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--azc)}
+.field textarea{resize:vertical;min-height:55px}
+.mfooter{display:flex;gap:.45rem;justify-content:flex-end;margin-top:1rem}
+.loading{text-align:center;padding:3rem;color:var(--cz)}
+footer{padding:.65rem 2rem;font-size:.68rem;color:rgba(0,0,0,.28);text-align:center;border-top:1px solid var(--bd)}
+</style>
+</head>
+<body>
+<header>
+  <a class="nav-back" href="index.html">← Início</a>
+  <div class="sep"></div>
+  <div class="sigla">SEGAPE</div>
+  <div class="sep"></div>
+  <div class="subt">Gerente · Planejamento de ações por produto</div>
+  <div class="hright">
+    <select class="sel" id="sel-gerente" onchange="trocarGerente()">
+      <option value="">— Selecione o gerente —</option>
+    </select>
+  </div>
+</header>
+
+<main>
+  <div id="state-empty" class="loading">Selecione o gerente para carregar seus produtos</div>
+  <div id="state-loading" class="loading" style="display:none">⏳ Carregando…</div>
+  <div id="painel" style="display:none">
+    <div class="kcards" id="kcards"></div>
+    <div class="tabs">
+      <div class="tab active" data-tab="acoes" onclick="trocarTab('acoes')">Ações por produto</div>
+      <div class="tab" data-tab="gantt" onclick="trocarTab('gantt')">Cronograma Gantt</div>
+      <div class="tab" data-tab="exec" onclick="trocarTab('exec')">Carga por executor</div>
+    </div>
+    <div id="tab-acoes"></div>
+    <div id="tab-gantt" style="display:none"><div class="gantt-wrap" id="gantt"></div></div>
+    <div id="tab-exec" style="display:none"><div class="exec-grid" id="exec-grid"></div></div>
+  </div>
+</main>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="fecharFora(event)">
+  <div class="modal">
+    <div class="m-title" id="m-title">Nova ação</div>
+    <div class="fgrid">
+      <div class="field full"><label>Produto</label><select id="f-produto"></select></div>
+      <div class="field full"><label>Título da ação *</label><input id="f-titulo" type="text" placeholder="Ex: Levantar indicadores de matrícula 2025"></div>
+      <div class="field full"><label>Descrição</label><textarea id="f-descricao" placeholder="Detalhe o que será feito…"></textarea></div>
+      <div class="field"><label>Executor</label><select id="f-executor"><option value="">Não definido</option></select></div>
+      <div class="field"><label>Fase</label><select id="f-fase"></select></div>
+      <div class="field"><label>Mês início</label><select id="f-mi"></select></div>
+      <div class="field"><label>Mês fim</label><select id="f-mf"></select></div>
+      <div class="field"><label>Horas estimadas</label><input id="f-horas" type="number" min="1" max="500" placeholder="Ex: 16"></div>
+      <div class="field"><label>Complexidade</label><select id="f-cx"></select></div>
+      <div class="field"><label>Prioridade</label>
+        <select id="f-prio"><option value="baixa">Baixa</option><option value="media" selected>Média</option><option value="alta">Alta</option></select>
+      </div>
+      <div class="field"><label>Status</label><select id="f-status"></select></div>
+      <div class="field"><label>% Avanço</label><input id="f-pct" type="number" min="0" max="100" value="0"></div>
+    </div>
+    <div class="mfooter">
+      <button class="btn btn-o" onclick="fechar()">Cancelar</button>
+      <button class="btn btn-p" onclick="salvar()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<footer>SEGAPE · Planejamento Educadados · <a href="index.html" style="color:inherit">Início</a></footer>
+
+<script src="assets/dados.js"></script>
+<script src="assets/db.js"></script>
+<script>
+let gerenteId = null;
+let acoes = [];
+let editId = null;
+let tabAtiva = 'acoes';
+let mesAtual = new Date().getMonth() + 1;
+
+// ---- Init ----
+function init() {
+  const sel = document.getElementById('sel-gerente');
+  getGerentes().forEach(g => {
+    const o = document.createElement('option');
+    o.value = g.id; o.textContent = g.nome;
+    sel.appendChild(o);
+  });
+  popularModal();
+}
+
+function popularModal() {
+  getExecutores().forEach(e => {
+    document.getElementById('f-executor').insertAdjacentHTML('beforeend',
+      `<option value="${e.id}">${e.nome.split(' ').slice(0,3).join(' ')} · ${e.vinculo}</option>`);
+  });
+  Object.entries(FASES).forEach(([k,v]) =>
+    document.getElementById('f-fase').insertAdjacentHTML('beforeend', `<option value="${k}">${v.label}</option>`));
+  Object.entries(COMPLEXIDADE).forEach(([k,v]) =>
+    document.getElementById('f-cx').insertAdjacentHTML('beforeend', `<option value="${k}">${v.label}</option>`));
+  Object.entries(STATUS_LABELS).forEach(([k,v]) =>
+    document.getElementById('f-status').insertAdjacentHTML('beforeend', `<option value="${k}">${v.label}</option>`));
+  MESES_FULL.forEach((m,i) => {
+    const o1 = `<option value="${i+1}">${m}</option>`;
+    document.getElementById('f-mi').insertAdjacentHTML('beforeend', o1);
+    document.getElementById('f-mf').insertAdjacentHTML('beforeend', o1);
+  });
+  document.getElementById('f-mi').value = mesAtual;
+  document.getElementById('f-mf').value = Math.min(12, mesAtual + 1);
+}
+
+async function trocarGerente() {
+  gerenteId = document.getElementById('sel-gerente').value;
+  if (!gerenteId) { show('empty'); return; }
+  await carregar();
+  dbEscutar(() => carregar());
+}
+
+async function carregar() {
+  show('loading');
+  try {
+    acoes = await dbListarAcoes({ gerente_id: gerenteId });
+    renderPainel();
+    show('painel');
+  } catch(e) {
+    alert('Erro ao carregar: ' + e.message);
+    show('empty');
+  }
+}
+
+function show(s) {
+  ['empty','loading','painel'].forEach(id =>
+    document.getElementById('state-' + id).style.display = (id === s ? 'block' : 'none'));
+  if (s !== 'painel') document.getElementById('painel').style.display = 'none';
+  else document.getElementById('painel').style.display = 'block';
+}
+
+// ---- Render ----
+function renderPainel() {
+  const prods = getProdutosPorGerente(gerenteId);
+  const h = acoes.reduce((s,a) => s + (a.horas_estimadas||0), 0);
+  const pct = acoes.length ? Math.round(acoes.reduce((s,a)=>s+(a.percentual||0),0)/acoes.length) : 0;
+  document.getElementById('kcards').innerHTML = `
+    <div class="kc"><div class="kc-n">${prods.length}</div><div class="kc-l">Produtos</div></div>
+    <div class="kc"><div class="kc-n">${acoes.length}</div><div class="kc-l">Ações</div></div>
+    <div class="kc"><div class="kc-n">${h}h</div><div class="kc-l">Horas estimadas</div></div>
+    <div class="kc"><div class="kc-n">${acoes.filter(a=>a.status==='concluido').length}</div><div class="kc-l">Concluídas</div></div>
+    <div class="kc"><div class="kc-n">${pct}%</div><div class="kc-l">Avanço médio</div></div>
+  `;
+  if (tabAtiva === 'acoes')  renderAcoes();
+  if (tabAtiva === 'gantt')  renderGantt();
+  if (tabAtiva === 'exec')   renderExec();
+}
+
+function renderAcoes() {
+  const prods = getProdutosPorGerente(gerenteId);
+  let html = '';
+  prods.forEach(p => {
+    const pa = acoes.filter(a => a.produto_id === p.id);
+    const tipo = TIPOS_PRODUTO[p.tipo] || {cor:'#888'};
+    const th = pa.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+    html += `<div class="prod-block">
+      <div class="sec-hdr">
+        <div>
+          <div class="prod-label">
+            <div class="prod-dot" style="background:${tipo.cor}"></div>
+            <span class="prod-name">${p.nome}</span>
+            ${tipoBadge(p.tipo)}
+          </div>
+          <div class="prod-meta">${p.descricao} · ${pa.length} ação(ões) · ${th}h estimadas</div>
+        </div>
+        <div style="display:flex;gap:.4rem">
+          <button class="btn btn-pdf" onclick="gerarPDFProduto('${p.id}')">📄 PDF</button>
+          <button class="btn btn-p" onclick="abrirModal('${p.id}')">+ Ação</button>
+        </div>
+      </div>
+      ${pa.length === 0
+        ? `<div class="empty">Nenhuma ação cadastrada para este produto</div>`
+        : `<table class="t"><thead><tr>
+            <th>Ação</th><th>Executor</th><th>Fase</th><th>Complexidade</th>
+            <th>Período</th><th>Horas</th><th>Avanço</th><th>Status</th><th></th>
+           </tr></thead><tbody>
+           ${pa.map(a => {
+             const ex = a.executor_id ? getMembroEquipe(a.executor_id) : null;
+             return `<tr>
+               <td><div style="font-weight:500">${a.titulo}</div>${a.descricao?`<div style="font-size:.7rem;color:var(--cz)">${a.descricao}</div>`:''}</td>
+               <td>${ex ? `<div style="font-size:.76rem">${ex.nome.split(' ').slice(0,2).join(' ')}</div>${vincBadge(ex.vinculo)}` : '—'}</td>
+               <td>${faseBadge(a.fase)}</td>
+               <td>${complexBadge(a.complexidade)}</td>
+               <td style="font-size:.76rem;white-space:nowrap">${mesToNome(a.mes_inicio)} → ${mesToNome(a.mes_fim)}</td>
+               <td style="font-weight:600;color:var(--azul)">${a.horas_estimadas||'—'}h</td>
+               <td><div style="display:flex;align-items:center;gap:3px">
+                 <div class="pbar"><div class="pfill" style="width:${a.percentual||0}%"></div></div>
+                 <span style="font-size:.72rem;color:var(--cz)">${a.percentual||0}%</span>
+               </div></td>
+               <td>${statusBadge(a.status)}</td>
+               <td><div style="display:flex;gap:3px">
+                 <button class="btn btn-edit" onclick="editar('${a.id}')">✏</button>
+                 <button class="btn btn-del" onclick="remover('${a.id}')">✕</button>
+               </div></td>
+             </tr>`;
+           }).join('')}
+           </tbody></table>`}
+    </div>`;
+  });
+  document.getElementById('tab-acoes').innerHTML = html || '<div class="empty">Nenhum produto cadastrado para este gerente</div>';
+}
+
+function renderGantt() {
+  const prods = getProdutosPorGerente(gerenteId);
+  let html = `<div class="gh-row">
+    <div class="gc-label">Ação</div>
+    <div class="gm-hdr">${MESES.map(m=>`<div class="gm-lbl">${m}</div>`).join('')}</div>
+  </div>`;
+  prods.forEach(p => {
+    const pa = acoes.filter(a => a.produto_id === p.id);
+    if (!pa.length) return;
+    const tipo = TIPOS_PRODUTO[p.tipo]||{cor:'#888'};
+    html += `<div class="g-group" style="color:${tipo.cor}">${p.nome}</div>`;
+    pa.forEach(a => {
+      const ex = a.executor_id ? getMembroEquipe(a.executor_id) : null;
+      const cor = FASES[a.fase]?.cor || '#888';
+      const cells = MESES.map((_,i) => {
+        const m = i+1, ativo = m>=a.mes_inicio && m<=a.mes_fim;
+        return `<div class="g-cell" style="${ativo?`background:${cor}`:''};${m===mesAtual?'box-shadow:inset 0 0 0 1px var(--dou)':''}"></div>`;
+      }).join('');
+      html += `<div class="g-row">
+        <div class="g-nome">${a.titulo}<div class="g-sub">${ex?ex.nome.split(' ')[0]:'—'} · ${a.horas_estimadas||0}h</div></div>
+        <div class="g-grid">${cells}</div>
+      </div>`;
+    });
+  });
+  document.getElementById('gantt').innerHTML = html;
+}
+
+function renderExec() {
+  const executores = getExecutores();
+  let html = '';
+  executores.forEach(e => {
+    const ea = acoes.filter(a => a.executor_id === e.id);
+    if (!ea.length) return;
+    const h = ea.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+    html += `<div class="exec-card">
+      <div class="exec-header">
+        <div><div style="font-weight:600;font-size:.84rem">${e.nome}</div><div style="margin-top:3px">${vincBadge(e.vinculo)}</div></div>
+        <div><div class="exec-h">${h}h</div><div style="font-size:.66rem;color:var(--cz)">${ea.length} ação(ões)</div></div>
+      </div>
+      ${ea.map(a => {
+        const p = getProduto(a.produto_id);
+        return `<div class="exec-item">
+          <div><div>${a.titulo}</div><div style="font-size:.67rem;color:var(--cz)">${p?.nome||''}</div></div>
+          <div style="display:flex;gap:4px;align-items:center;margin-left:8px;white-space:nowrap">
+            <span style="font-weight:600;color:var(--azul)">${a.horas_estimadas||0}h</span>
+            ${faseBadge(a.fase)}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  });
+  document.getElementById('exec-grid').innerHTML = html || '<div class="empty">Nenhum executor com ações atribuídas</div>';
+}
+
+// ---- PDF ----
+function gerarPDFProduto(prodId) {
+  const p = getProduto(prodId);
+  const pa = acoes.filter(a => a.produto_id === prodId);
+  if (!pa.length) { alert('Nenhuma ação para exportar.'); return; }
+  const gerente = getMembroEquipe(gerenteId);
+  const th = pa.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+  const rows = pa.map(a => {
+    const ex = a.executor_id ? getMembroEquipe(a.executor_id) : null;
+    return `<tr>
+      <td>${a.titulo}${a.descricao?'<br><small style="color:#666">'+a.descricao+'</small>':''}</td>
+      <td>${ex?ex.nome.split(' ').slice(0,2).join(' '):'—'}</td>
+      <td>${FASES[a.fase]?.label||a.fase}</td>
+      <td>${COMPLEXIDADE[a.complexidade]?.label||a.complexidade}</td>
+      <td>${mesToNome(a.mes_inicio)} → ${mesToNome(a.mes_fim)}</td>
+      <td>${a.horas_estimadas||0}h</td>
+      <td>${a.percentual||0}%</td>
+      <td>${STATUS_LABELS[a.status]?.label||a.status}</td>
+    </tr>`;
+  }).join('');
+
+  gerarPDF(`Planejamento — ${p.nome}`, `
+    <h1>${p.nome}</h1>
+    <p class="sub">Gerente: ${gerente?.nome||'—'} · Coordenação: ${p.coordenacao_id.toUpperCase()} · Total: ${pa.length} ações · ${th}h estimadas</p>
+    <table>
+      <thead><tr><th>Ação</th><th>Executor</th><th>Fase</th><th>Complexidade</th><th>Período</th><th>Horas</th><th>Avanço</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `);
+}
+
+// ---- Modal ----
+function abrirModal(prodId) {
+  editId = null;
+  document.getElementById('m-title').textContent = 'Nova ação';
+  resetForm();
+  popularProdutos(prodId);
+  document.getElementById('overlay').classList.add('open');
+}
+
+function editar(id) {
+  const a = acoes.find(x => x.id === id);
+  if (!a) return;
+  editId = id;
+  document.getElementById('m-title').textContent = 'Editar ação';
+  popularProdutos(a.produto_id);
+  document.getElementById('f-titulo').value    = a.titulo;
+  document.getElementById('f-descricao').value = a.descricao || '';
+  document.getElementById('f-executor').value  = a.executor_id || '';
+  document.getElementById('f-fase').value       = a.fase;
+  document.getElementById('f-cx').value         = a.complexidade;
+  document.getElementById('f-prio').value       = a.prioridade;
+  document.getElementById('f-status').value     = a.status;
+  document.getElementById('f-mi').value         = a.mes_inicio;
+  document.getElementById('f-mf').value         = a.mes_fim;
+  document.getElementById('f-horas').value      = a.horas_estimadas || '';
+  document.getElementById('f-pct').value        = a.percentual || 0;
+  document.getElementById('overlay').classList.add('open');
+}
+
+function popularProdutos(selId) {
+  const s = document.getElementById('f-produto');
+  s.innerHTML = '<option value="">— Selecione —</option>';
+  getProdutosPorGerente(gerenteId).forEach(p => {
+    s.insertAdjacentHTML('beforeend', `<option value="${p.id}" ${p.id===selId?'selected':''}>${p.nome}</option>`);
+  });
+}
+
+function resetForm() {
+  ['f-titulo','f-descricao','f-horas'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-executor').value = '';
+  document.getElementById('f-fase').value      = 'planejamento';
+  document.getElementById('f-cx').value        = 'media';
+  document.getElementById('f-prio').value      = 'media';
+  document.getElementById('f-status').value    = 'planejado';
+  document.getElementById('f-mi').value        = mesAtual;
+  document.getElementById('f-mf').value        = Math.min(12, mesAtual + 1);
+  document.getElementById('f-pct').value       = 0;
+}
+
+async function salvar() {
+  const titulo     = document.getElementById('f-titulo').value.trim();
+  const produto_id = document.getElementById('f-produto').value;
+  if (!titulo || !produto_id) { alert('Preencha produto e título.'); return; }
+
+  const campos = {
+    produto_id, gerente_id: gerenteId, titulo,
+    descricao:       document.getElementById('f-descricao').value.trim(),
+    executor_id:     document.getElementById('f-executor').value || null,
+    fase:            document.getElementById('f-fase').value,
+    complexidade:    document.getElementById('f-cx').value,
+    prioridade:      document.getElementById('f-prio').value,
+    status:          document.getElementById('f-status').value,
+    mes_inicio:      parseInt(document.getElementById('f-mi').value),
+    mes_fim:         parseInt(document.getElementById('f-mf').value),
+    horas_estimadas: parseInt(document.getElementById('f-horas').value) || 0,
+    percentual:      parseInt(document.getElementById('f-pct').value) || 0,
+    aprovacao_coord: 'pendente', aprovacao_dir: 'pendente', aprovacao_sec: 'pendente',
+  };
+
+  try {
+    if (editId) await dbAtualizarAcao(editId, campos);
+    else        await dbCriarAcao(campos);
+    fechar();
+    await carregar();
+  } catch(e) { alert('Erro ao salvar: ' + e.message); }
+}
+
+async function remover(id) {
+  if (!confirm('Remover esta ação?')) return;
+  try {
+    await dbRemoverAcao(id);
+    await carregar();
+  } catch(e) { alert('Erro: ' + e.message); }
+}
+
+function trocarTab(t) {
+  tabAtiva = t;
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab === t));
+  ['acoes','gantt','exec'].forEach(x => document.getElementById('tab-'+x).style.display = (x===t)?'block':'none');
+  if (t==='gantt') renderGantt();
+  if (t==='exec')  renderExec();
+}
+
+function fechar() { document.getElementById('overlay').classList.remove('open'); }
+function fecharFora(e) { if (e.target.id === 'overlay') fechar(); }
+
+init();
+</script>
+</body>
+</html>
