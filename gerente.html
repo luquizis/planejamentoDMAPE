@@ -314,21 +314,43 @@ let mesAtual = new Date().getMonth() + 1;
 // INIT
 // ============================================================
 async function init() {
+  document.getElementById('state-empty').textContent = '⏳ Carregando dados do Supabase…';
+
   try {
-    // Tenta carregar gerentes do banco; cai no dados.js se falhar
     gerentes = await dbListarGerentes();
+    // Se banco vazio, popula com dados.js
+    if (gerentes.length === 0 && typeof EQUIPE !== 'undefined') {
+      const gerentesLocal = EQUIPE.filter(e => e.nivel === 'gerente');
+      for (const g of gerentesLocal) {
+        try {
+          const [novo] = await dbCriarGerente({ nome: g.nome, area: g.area||'', vinculo: g.vinculo||'Servidor', sala: g.sala||'' });
+          gerentes.push(novo);
+        } catch(e) {}
+      }
+    }
   } catch(e) {
-    gerentes = typeof EQUIPE !== 'undefined'
-      ? EQUIPE.filter(e => e.nivel === 'gerente')
-      : [];
+    gerentes = typeof EQUIPE !== 'undefined' ? EQUIPE.filter(e => e.nivel === 'gerente') : [];
   }
+
   try {
     colaboradores = await dbListarColaboradores();
+    // Se banco vazio, popula com dados.js
+    if (colaboradores.length === 0 && typeof EQUIPE !== 'undefined') {
+      const niveisExec = ['gerente','servidor','consultor','bolsista','terceirizado','estagiario'];
+      const colabsLocal = EQUIPE.filter(e => niveisExec.includes(e.nivel));
+      for (const c of colabsLocal) {
+        try {
+          const [novo] = await dbCriarColaborador({ nome: c.nome, area: c.area||'', vinculo: c.vinculo||'Servidor', sala: c.sala||'' });
+          colaboradores.push(novo);
+        } catch(e) {}
+      }
+    }
   } catch(e) {
-    colaboradores = typeof EQUIPE !== 'undefined'
-      ? EQUIPE.filter(e => ['gerente','servidor','consultor','bolsista','terceirizado','estagiario'].includes(e.nivel))
-      : [];
+    const niveisExec = ['gerente','servidor','consultor','bolsista','terceirizado','estagiario'];
+    colaboradores = typeof EQUIPE !== 'undefined' ? EQUIPE.filter(e => niveisExec.includes(e.nivel)) : [];
   }
+
+  document.getElementById('state-empty').textContent = 'Selecione o gerente para carregar seus produtos';
   popularSelectGerentes();
   popularModal();
 }
