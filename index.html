@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SEGAPE — Planejamento de Publicações</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--azul:#1B3A6B;--azm:#2E5CA8;--azc:#5B8DD9;--verde:#1D7A55;--dou:#C8922A;--douc:#E8B84B;--ce:#2C2C2C;--cz:#5F5F5F;--cl:#F4F3EF;--br:#FAFAF8;--bd:rgba(0,0,0,0.09)}
+body{font-family:'DM Sans',sans-serif;background:var(--cl);min-height:100vh;display:flex;flex-direction:column}
+header{background:var(--azul);padding:1.1rem 2.5rem;display:flex;align-items:center;gap:1rem}
+.sigla{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:var(--douc);letter-spacing:.04em}
+.sep{width:1px;height:36px;background:rgba(255,255,255,.18);margin:0 .75rem}
+.nome{font-size:.7rem;color:rgba(255,255,255,.5);max-width:360px;line-height:1.4}
+.mec{font-size:.68rem;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1.5rem;gap:2rem}
+.titulo{font-family:'Syne',sans-serif;font-weight:700;font-size:clamp(1.4rem,3.5vw,1.9rem);color:var(--azul);text-align:center}
+.subtitulo{font-size:.88rem;color:var(--cz);text-align:center;margin-top:.3rem;max-width:560px;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;width:100%;max-width:960px}
+.card{background:var(--br);border:1.5px solid var(--bd);border-radius:14px;padding:1.5rem 1.25rem;display:flex;flex-direction:column;gap:.7rem;text-decoration:none;transition:transform .15s,box-shadow .15s,border-color .15s;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:14px 14px 0 0}
+.card.sec::before{background:var(--dou)}
+.card.dir::before{background:var(--azm)}
+.card.coord::before{background:var(--azc)}
+.card.ger::before{background:var(--verde)}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.09)}
+.card.sec:hover{border-color:var(--dou)}
+.card.dir:hover{border-color:var(--azm)}
+.card.coord:hover{border-color:var(--azc)}
+.card.ger:hover{border-color:var(--verde)}
+.icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.7rem}
+.sec .icon{background:#FEF3E0;color:var(--dou)}
+.dir .icon{background:#E8EEFA;color:var(--azm)}
+.coord .icon{background:#EAF2FF;color:var(--azc)}
+.ger .icon{background:#E0F5ED;color:var(--verde)}
+.nivel{font-size:.63rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--cz)}
+.ctitle{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:var(--ce)}
+.cdesc{font-size:.74rem;color:var(--cz);line-height:1.5}
+.clink{margin-top:auto;font-size:.74rem;font-weight:500}
+.sec .clink{color:var(--dou)}.dir .clink{color:var(--azm)}.coord .clink{color:var(--azc)}.ger .clink{color:var(--verde)}
+.fluxo{font-size:.75rem;color:var(--cz);background:rgba(0,0,0,.04);border-radius:8px;padding:.5rem 1.1rem;max-width:680px;text-align:center}
+footer{padding:.9rem 2.5rem;font-size:.7rem;color:rgba(0,0,0,.26);text-align:center;border-top:1px solid var(--bd)}
+@media(max-width:700px){.grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="sigla">SEGAPE</div>
+    <div class="nome">Secretaria de Gestão da Informação, Inovação e Avaliação de Políticas Educacionais</div>
+  </div>
+  <div class="sep"></div>
+  <div class="mec">MEC · Educadados</div>
+</header>
+<main>
+  <div>
+    <div class="titulo">Planejamento de Publicações</div>
+    <p class="subtitulo">Cada gerente planeja as ações do seu produto — executor, horas, complexidade e prazo. Coordenação, diretoria e secretaria acompanham tudo em tempo real.</p>
+  </div>
+  <div class="grid">
+    <a class="card sec" href="secretaria.html">
+      <div class="icon">SEC</div>
+      <div class="nivel">Nível 1</div>
+      <div class="ctitle">Secretaria</div>
+      <div class="cdesc">Dashboard executivo completo: KPIs, Gantt geral, visão por produto e aprovação final</div>
+      <div class="clink">Acessar →</div>
+    </a>
+    <a class="card dir" href="diretoria.html">
+      <div class="icon">DIR</div>
+      <div class="nivel">Nível 2</div>
+      <div class="ctitle">Diretoria</div>
+      <div class="cdesc">Visão consolidada por coordenação: ações, Gantt e aprovação da diretoria</div>
+      <div class="clink">Acessar →</div>
+    </a>
+    <a class="card coord" href="coordenador.html">
+      <div class="icon">COORD</div>
+      <div class="nivel">Nível 3</div>
+      <div class="ctitle">Coordenação</div>
+      <div class="cdesc">Ações dos gerentes vinculados: visualização detalhada e validação das entregas</div>
+      <div class="clink">Acessar →</div>
+    </a>
+    <a class="card ger" href="gerente.html">
+      <div class="icon">GM</div>
+      <div class="nivel">Nível 4</div>
+      <div class="ctitle">Gerente</div>
+      <div class="cdesc">Cadastra ações por produto: executor, horas, complexidade, fase e cronograma</div>
+      <div class="clink">Acessar →</div>
+    </a>
+  </div>
+  <div class="fluxo">
+    Fluxo: <strong>Gerente</strong> cadastra → <strong>Coordenação</strong> valida → <strong>Diretoria</strong> aprova → <strong>Secretário</strong> aprova final · Dados em tempo real via Supabase
+  </div>
+</main>
+<footer>SEGAPE · Planejamento Educadados · v4.0 · Projeto UNESCO 914BRZ1161.1</footer>
+</body>
+</html>
