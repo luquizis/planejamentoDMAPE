@@ -35,7 +35,6 @@ table.t tr:hover td{background:#F8F8F6}
 .btn-ok{background:#E0F5ED;color:var(--verde);border:1px solid #1D7A5540}
 .btn-no{background:#FFF0EC;color:#B34A2A;border:1px solid #B34A2A40}
 .empty{text-align:center;padding:2rem;color:var(--cz);font-size:.82rem;background:var(--br);border:1px solid var(--bd);border-radius:10px;margin-bottom:1rem}
-.prod-hdr{font-size:.8rem;font-weight:700;padding:.4rem .75rem;background:#F0F2F6;border-bottom:1px solid var(--bd)}
 .gantt-wrap{background:var(--br);border:1px solid var(--bd);border-radius:10px;overflow:auto}
 .gh-row{display:grid;grid-template-columns:240px 70px 1fr;border-bottom:1px solid var(--bd)}
 .gc-lbl{padding:.4rem .6rem;font-size:.65rem;font-weight:600;color:var(--cz);text-transform:uppercase}
@@ -80,58 +79,70 @@ footer{padding:.65rem 2rem;font-size:.68rem;color:rgba(0,0,0,.28);text-align:cen
   </div>
 </main>
 <footer>SEGAPE · Coordenação · <a href="index.html" style="color:inherit">Início</a></footer>
-<script src="dados.js"></script>
-<script src="db.js"></script>
+<script src="assets/dados.js"></script>
+<script src="assets/db.js"></script>
 <script>
-let coordId = null, acoes = [], mesAtual = new Date().getMonth()+1;
+let coordId=null, acoes=[], produtos=[], gerentes=[], mesAtual=new Date().getMonth()+1;
 
-function init() {
-  const s = document.getElementById('sel-coord');
-  HIERARQUIA.coordenacoes.forEach(c => s.insertAdjacentHTML('beforeend',
+function fmtData(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}`;}
+function getMesInicio(a){return a.data_inicio?new Date(a.data_inicio).getMonth()+1:null;}
+function getMesFim(a){return a.data_fim?new Date(a.data_fim).getMonth()+1:null;}
+function getNomeGerente(id){return gerentes.find(g=>g.id===id)?.nome||'—';}
+
+function init(){
+  const s=document.getElementById('sel-coord');
+  HIERARQUIA.coordenacoes.forEach(c=>s.insertAdjacentHTML('beforeend',
     `<option value="${c.id}">${c.sigla} — ${c.coordenador.split(' ')[0]}</option>`));
 }
 
-async function trocarCoord() {
-  coordId = document.getElementById('sel-coord').value;
-  if (!coordId) { show('empty'); return; }
+async function trocarCoord(){
+  coordId=document.getElementById('sel-coord').value;
+  if(!coordId){show('empty');return;}
   await carregar();
-  dbEscutar(() => carregar());
+  dbEscutar(()=>carregar());
 }
 
-async function carregar() {
+async function carregar(){
   show('loading');
-  try {
-    acoes = await dbListarAcoes();
-    // filtrar pelos produtos desta coord
-    const pids = PRODUTOS_CATALOGO.filter(p=>p.coordenacao_id===coordId).map(p=>p.id);
-    acoes = acoes.filter(a => pids.includes(a.produto_id));
-    renderPainel();
-    show('painel');
-  } catch(e) { alert('Erro: '+e.message); show('empty'); }
+  try{
+    [acoes, produtos, gerentes] = await Promise.all([
+      dbListarAcoes(),
+      dbListarProdutos(),
+      dbListarGerentes(),
+    ]);
+    // Filtrar por coordenação
+    const pids=produtos.filter(p=>p.coordenacao_id===coordId).map(p=>p.id);
+    acoes=acoes.filter(a=>pids.includes(a.produto_id));
+    renderPainel(); show('painel');
+  }catch(e){alert('Erro: '+e.message);show('empty');}
 }
 
-function show(s) {
-  ['empty','loading'].forEach(id => document.getElementById('state-'+id).style.display=(id===s)?'block':'none');
-  document.getElementById('painel').style.display = (s==='painel')?'block':'none';
+function show(s){
+  document.getElementById('state-empty').style.display=(s==='empty')?'block':'none';
+  document.getElementById('state-loading').style.display=(s==='loading')?'block':'none';
+  document.getElementById('painel').style.display=(s==='painel')?'block':'none';
 }
 
-function renderPainel() {
-  const h = acoes.reduce((s,a)=>s+(a.horas_estimadas||0),0);
-  const pend = acoes.filter(a=>a.aprovacao_coord==='pendente').length;
-  const pct = acoes.length?Math.round(acoes.reduce((s,a)=>s+(a.percentual||0),0)/acoes.length):0;
-  document.getElementById('kcards').innerHTML = `
-    <div class="kc"><div class="kc-n">${PRODUTOS_CATALOGO.filter(p=>p.coordenacao_id===coordId).length}</div><div class="kc-l">Produtos</div></div>
+function getProdutosCoord(){ return produtos.filter(p=>p.coordenacao_id===coordId); }
+
+function renderPainel(){
+  const prods=getProdutosCoord();
+  const h=acoes.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+  const pend=acoes.filter(a=>a.aprovacao_coord==='pendente').length;
+  const pct=acoes.length?Math.round(acoes.reduce((s,a)=>s+(a.percentual||0),0)/acoes.length):0;
+  document.getElementById('kcards').innerHTML=`
+    <div class="kc"><div class="kc-n">${prods.length}</div><div class="kc-l">Produtos</div></div>
     <div class="kc"><div class="kc-n">${acoes.length}</div><div class="kc-l">Ações</div></div>
     <div class="kc"><div class="kc-n">${h}h</div><div class="kc-l">Horas estimadas</div></div>
     <div class="kc ${pend>0?'alert':''}"><div class="kc-n">${pend}</div><div class="kc-l">Pendentes validação</div></div>
     <div class="kc"><div class="kc-n">${pct}%</div><div class="kc-l">Avanço médio</div></div>
   `;
   renderAcoes(); renderAprov();
-  if (document.getElementById('tab-gantt').style.display==='block') renderGantt();
+  if(document.getElementById('tab-gantt').style.display==='block') renderGantt();
 }
 
-function renderAcoes() {
-  const prods = PRODUTOS_CATALOGO.filter(p=>p.coordenacao_id===coordId);
+function renderAcoes(){
+  const prods=getProdutosCoord();
   let html='';
   prods.forEach(p=>{
     const pa=acoes.filter(a=>a.produto_id===p.id);
@@ -144,11 +155,11 @@ function renderAcoes() {
         ${tipoBadge(p.tipo)}
       </div>
       <table class="t"><thead><tr>
-        <th>Ação</th><th>Gerente</th><th>Executor</th><th>Fase</th><th>Cx</th>
+        <th>Ação</th><th>Gerente</th><th>Fase</th><th>Cx</th>
         <th>Período</th><th>Horas</th><th>Avanço</th><th>Status</th><th>Validação</th>
       </tr></thead><tbody>
       ${pa.map(a=>{
-        const g=getMembroEquipe(a.gerente_id),ex=a.executor_id?getMembroEquipe(a.executor_id):null;
+        const g=getNomeGerente(a.gerente_id);
         const v=a.aprovacao_coord==='aprovado'
           ?`<span style="color:var(--verde);font-size:.72rem;font-weight:600">✓ Validado</span>`
           :a.aprovacao_coord==='rejeitado'
@@ -158,11 +169,13 @@ function renderAcoes() {
                <button class="btn btn-no" onclick="validar('${a.id}','rejeitado')">✗</button>
              </div>`;
         return `<tr>
-          <td><div style="font-weight:500">${a.titulo}</div>${a.descricao?`<div style="font-size:.69rem;color:var(--cz)">${a.descricao}</div>`:''}</td>
-          <td style="font-size:.75rem">${g?.nome.split(' ')[0]||'—'}</td>
-          <td style="font-size:.75rem">${ex?ex.nome.split(' ').slice(0,2).join(' ')+'<br>'+vincBadge(ex.vinculo):'—'}</td>
+          <td><div style="font-weight:500">${a.titulo}</div>
+            ${a.descricao?`<div style="font-size:.69rem;color:var(--cz)">${a.descricao}</div>`:''}
+            ${a.observacao?`<div style="font-size:.68rem;color:var(--dou)">💬 ${a.observacao}</div>`:''}
+          </td>
+          <td style="font-size:.75rem">${g.split(' ')[0]}</td>
           <td>${faseBadge(a.fase)}</td><td>${complexBadge(a.complexidade)}</td>
-          <td style="font-size:.75rem;white-space:nowrap">${mesToNome(a.mes_inicio)}→${mesToNome(a.mes_fim)}</td>
+          <td style="font-size:.75rem;white-space:nowrap">${a.data_inicio?fmtData(a.data_inicio):'—'}→${a.data_fim?fmtData(a.data_fim):'—'}</td>
           <td style="font-weight:600;color:var(--azul)">${a.horas_estimadas||0}h</td>
           <td><div style="display:flex;align-items:center;gap:3px">
             <div class="pbar"><div class="pfill" style="width:${a.percentual||0}%"></div></div>
@@ -173,16 +186,16 @@ function renderAcoes() {
       }).join('')}
       </tbody></table></div>`;
   });
-  document.getElementById('tab-acoes').innerHTML = html || '<div class="empty">Nenhuma ação cadastrada</div>';
+  document.getElementById('tab-acoes').innerHTML=html||'<div class="empty">Nenhuma ação cadastrada</div>';
 }
 
-async function validar(id, decisao) {
-  try { await dbAtualizarAcao(id, {aprovacao_coord: decisao}); await carregar(); }
-  catch(e) { alert('Erro: '+e.message); }
+async function validar(id,decisao){
+  try{await dbAtualizarAcao(id,{aprovacao_coord:decisao});await carregar();}
+  catch(e){alert('Erro: '+e.message);}
 }
 
-function renderGantt() {
-  const prods=PRODUTOS_CATALOGO.filter(p=>p.coordenacao_id===coordId);
+function renderGantt(){
+  const prods=getProdutosCoord();
   let html=`<div class="gh-row">
     <div class="gc-lbl">Ação</div><div class="gc-lbl">Gerente</div>
     <div class="gm-hdr">${MESES.map(m=>`<div class="gm-lbl">${m}</div>`).join('')}</div>
@@ -193,47 +206,45 @@ function renderGantt() {
     const tipo=TIPOS_PRODUTO[p.tipo]||{cor:'#888'};
     html+=`<div class="g-grp" style="color:${tipo.cor}">${p.nome}</div>`;
     pa.forEach(a=>{
-      const g=getMembroEquipe(a.gerente_id),cor=FASES[a.fase]?.cor||'#888';
+      const g=getNomeGerente(a.gerente_id);
+      const cor=FASES[a.fase]?.cor||'#888';
+      const mi=getMesInicio(a),mf=getMesFim(a);
       const cells=MESES.map((_,i)=>{
-        const m=i+1,at=m>=a.mes_inicio&&m<=a.mes_fim;
+        const m=i+1,at=mi&&mf&&m>=mi&&m<=mf;
         return `<div class="g-cell" style="${at?`background:${cor}`:''};${m===mesAtual?'box-shadow:inset 0 0 0 1px var(--dou)':''}"></div>`;
       }).join('');
       html+=`<div class="g-row">
         <div class="g-nome">${a.titulo}<div class="g-sub">${a.horas_estimadas||0}h · ${COMPLEXIDADE[a.complexidade]?.label||''}</div></div>
-        <div class="g-ger">${g?.nome.split(' ')[0]||'—'}</div>
+        <div class="g-ger">${g.split(' ')[0]}</div>
         <div class="g-grid">${cells}</div>
       </div>`;
     });
   });
-  document.getElementById('gantt').innerHTML = html;
+  document.getElementById('gantt').innerHTML=html;
 }
 
-function renderAprov() {
+function renderAprov(){
   const pend=acoes.filter(a=>a.aprovacao_coord==='pendente');
   if(!pend.length){document.getElementById('aprov-list').innerHTML='<div class="empty">Nenhuma ação pendente ✓</div>';return;}
   let html=`<div style="font-size:.8rem;color:var(--cz);margin-bottom:.5rem">${pend.length} ação(ões) aguardando validação</div>
-  <table class="t"><thead><tr><th>Ação</th><th>Produto</th><th>Gerente</th><th>Executor</th><th>Horas</th><th>Complexidade</th><th>Período</th><th>Ação</th></tr></thead><tbody>
-  ${pend.map(a=>{
-    const p=getProduto(a.produto_id),g=getMembroEquipe(a.gerente_id),ex=a.executor_id?getMembroEquipe(a.executor_id):null;
-    return `<tr>
-      <td style="font-weight:500">${a.titulo}</td>
-      <td style="font-size:.75rem">${p?.nome||'—'}</td>
-      <td style="font-size:.75rem">${g?.nome.split(' ')[0]||'—'}</td>
-      <td style="font-size:.75rem">${ex?ex.nome.split(' ').slice(0,2).join(' '):'—'}</td>
-      <td style="font-weight:600;color:var(--azul)">${a.horas_estimadas||0}h</td>
-      <td>${complexBadge(a.complexidade)}</td>
-      <td style="font-size:.75rem;white-space:nowrap">${mesToNome(a.mes_inicio)}→${mesToNome(a.mes_fim)}</td>
-      <td><div style="display:flex;gap:3px">
-        <button class="btn btn-ok" onclick="validar('${a.id}','aprovado')">✓ Validar</button>
-        <button class="btn btn-no" onclick="validar('${a.id}','rejeitado')">✗ Devolver</button>
-      </div></td>
-    </tr>`;
-  }).join('')}
+  <table class="t"><thead><tr><th>Ação</th><th>Produto</th><th>Gerente</th><th>Horas</th><th>Cx</th><th>Período</th><th>Ação</th></tr></thead><tbody>
+  ${pend.map(a=>`<tr>
+    <td style="font-weight:500">${a.titulo}</td>
+    <td style="font-size:.75rem">${produtos.find(p=>p.id===a.produto_id)?.nome||'—'}</td>
+    <td style="font-size:.75rem">${getNomeGerente(a.gerente_id).split(' ')[0]}</td>
+    <td style="font-weight:600;color:var(--azul)">${a.horas_estimadas||0}h</td>
+    <td>${complexBadge(a.complexidade)}</td>
+    <td style="font-size:.75rem;white-space:nowrap">${a.data_inicio?fmtData(a.data_inicio):'—'}→${a.data_fim?fmtData(a.data_fim):'—'}</td>
+    <td><div style="display:flex;gap:3px">
+      <button class="btn btn-ok" onclick="validar('${a.id}','aprovado')">✓ Validar</button>
+      <button class="btn btn-no" onclick="validar('${a.id}','rejeitado')">✗ Devolver</button>
+    </div></td>
+  </tr>`).join('')}
   </tbody></table>`;
-  document.getElementById('aprov-list').innerHTML = html;
+  document.getElementById('aprov-list').innerHTML=html;
 }
 
-function tab(t) {
+function tab(t){
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));
   ['acoes','gantt','aprov'].forEach(x=>document.getElementById('tab-'+x).style.display=(x===t)?'block':'none');
   if(t==='gantt') renderGantt();
