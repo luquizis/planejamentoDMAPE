@@ -761,6 +761,8 @@ async function salvarAcao() {
     status:          document.getElementById('f-status').value,
     data_inicio:     di||null,
     data_fim:        df||null,
+    mes_inicio:      di ? parseInt(di.split('-')[1]) : new Date().getMonth()+1,
+    mes_fim:         df ? parseInt(df.split('-')[1]) : new Date().getMonth()+1,
     horas_estimadas: parseInt(document.getElementById('f-horas').value)||0,
     percentual:      parseInt(document.getElementById('f-pct').value)||0,
     aprovacao_coord:'pendente', aprovacao_dir:'pendente', aprovacao_sec:'pendente',
