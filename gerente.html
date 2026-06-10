@@ -292,6 +292,7 @@ footer{padding:.65rem 2rem;font-size:.68rem;color:rgba(0,0,0,.28);text-align:cen
 <footer>SEGAPE · Planejamento Educadados · <a href="index.html" style="color:inherit">Início</a></footer>
 
 <script src="assets/dados.js"></script>
+<script src="assets/colaboradores_novos.js"></script>
 <script src="assets/db.js"></script>
 <script>
 let gerenteId = null;
@@ -324,10 +325,18 @@ async function init() {
   }
   try {
     colaboradores = await dbListarColaboradores();
-    if (!colaboradores.length && typeof EQUIPE !== 'undefined') {
+    // Mescla membros do EQUIPE que ainda não existem no banco (por nome)
+    if (typeof EQUIPE !== 'undefined') {
       const niveis = ['gerente','servidor','consultor','bolsista','terceirizado','estagiario'];
+      const nomesExistentes = new Set(colaboradores.map(c => (c.nome||'').trim().toLowerCase()));
       for (const c of EQUIPE.filter(e=>niveis.includes(e.nivel))) {
-        try { const [n] = await dbCriarColaborador({nome:c.nome,area:c.area||'',vinculo:c.vinculo||'Servidor',sala:c.sala||''}); colaboradores.push(n); } catch(e){}
+        const chave = (c.nome||'').trim().toLowerCase();
+        if (!chave || nomesExistentes.has(chave)) continue;
+        try {
+          const [n] = await dbCriarColaborador({nome:c.nome,area:c.area||'',vinculo:c.vinculo||'Servidor',sala:c.sala||''});
+          colaboradores.push(n);
+          nomesExistentes.add(chave);
+        } catch(e){}
       }
     }
   } catch(e) {
