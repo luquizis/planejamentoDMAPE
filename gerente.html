@@ -32,6 +32,8 @@ main{flex:1;padding:1.5rem 2rem;max-width:1400px;margin:0 auto;width:100%}
 .prod-card-desc{font-size:.72rem;color:var(--cz);line-height:1.4}
 .prod-card-meta{display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap}
 .prod-card-acoes{font-size:.7rem;color:var(--azm);font-weight:600}
+.prod-card-acts{position:absolute;top:.55rem;right:.6rem;display:flex;gap:4px;opacity:0;transition:opacity .15s}
+.prod-card:hover .prod-card-acts{opacity:1}
 .prod-add{background:transparent;border:1.5px dashed var(--bd);border-radius:12px;padding:1.1rem 1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;font-size:.82rem;color:var(--cz);transition:all .15s}
 .prod-add:hover{border-color:var(--azm);color:var(--azm)}
 
@@ -132,7 +134,7 @@ footer{padding:.65rem 2rem;font-size:.68rem;color:rgba(0,0,0,.28);text-align:cen
   <!-- ETAPA 1: Produtos do gerente -->
   <div id="etapa-produtos" style="display:none">
     <div class="etapa-titulo">Meus produtos</div>
-    <div class="etapa-sub">Selecione um produto para gerenciar as ações, ou adicione um novo.</div>
+    <div class="etapa-sub">Selecione um produto para gerenciar as ações, edite ou exclua seus produtos, ou adicione um novo.</div>
     <div class="prod-grid" id="prod-grid"></div>
   </div>
 
@@ -158,18 +160,18 @@ footer{padding:.65rem 2rem;font-size:.68rem;color:rgba(0,0,0,.28);text-align:cen
   </div>
 </main>
 
-<!-- Modal: Adicionar produto -->
+<!-- Modal: Adicionar/Editar produto -->
 <div class="overlay" id="overlay-prod" onclick="if(event.target.id==='overlay-prod')fecharModalProd()">
   <div class="modal" style="max-width:500px">
-    <div class="m-title">Adicionar produto</div>
+    <div class="m-title" id="m-title-prod">Adicionar produto</div>
     <div class="fgrid">
-      <div class="field full">
+      <div class="field full" id="cat-field">
         <label>Escolher do catálogo</label>
         <select id="cat-select" onchange="preencherCatalogo()">
           <option value="">— Selecione um produto existente —</option>
         </select>
       </div>
-      <div style="grid-column:1/-1;text-align:center;font-size:.75rem;color:var(--cz);padding:.25rem 0">— ou crie um novo —</div>
+      <div id="cat-divider" style="grid-column:1/-1;text-align:center;font-size:.75rem;color:var(--cz);padding:.25rem 0">— ou crie um novo —</div>
       <div class="field full"><label>Nome do produto *</label>
         <input id="np-nome" type="text" placeholder="Ex: Painel Educação Básica">
       </div>
@@ -192,7 +194,7 @@ footer{padding:.65rem 2rem;font-size:.68rem;color:rgba(0,0,0,.28);text-align:cen
     </div>
     <div class="mfooter">
       <button class="btn btn-o" onclick="fecharModalProd()">Cancelar</button>
-      <button class="btn btn-p" onclick="salvarProduto()">Adicionar produto</button>
+      <button class="btn btn-p" id="btn-salvar-prod" onclick="salvarProduto()">Adicionar produto</button>
     </div>
   </div>
 </div>
@@ -300,6 +302,7 @@ let todosProdutos = [];
 let colaboradores = [];
 let gerentes = [];
 let editId = null;
+let editProdId = null;
 let tabAtiva = 'acoes';
 let colabsSelecionados = [];
 let mesAtual = new Date().getMonth() + 1;
@@ -413,8 +416,11 @@ function renderProdutos() {
   const grid = document.getElementById('prod-grid');
   let html = meusProdutos.map(p => {
     const tipo = TIPOS_PRODUTO[p.tipo] || {cor:'#888', label:p.tipo};
-    const nAcoes = 0; // será carregado ao entrar no produto
     return `<div class="prod-card" onclick="entrarProduto('${p.id}')">
+      <div class="prod-card-acts">
+        <button class="btn-edit" title="Editar produto" onclick="event.stopPropagation();editarProduto('${p.id}')">✏</button>
+        <button class="btn-del" title="Excluir produto" onclick="event.stopPropagation();removerProduto('${p.id}','${(p.nome||'').replace(/'/g,"\\'")}')">✕</button>
+      </div>
       <div class="prod-card-top">
         <div class="prod-dot" style="background:${tipo.cor}"></div>
         <div class="prod-card-nome">${p.nome}</div>
@@ -563,9 +569,14 @@ function trocarTab(t) {
 }
 
 // ============================================================
-// MODAL PRODUTO
+// MODAL PRODUTO (criar / editar)
 // ============================================================
 function abrirModalProd() {
+  editProdId = null;
+  document.getElementById('m-title-prod').textContent = 'Adicionar produto';
+  document.getElementById('btn-salvar-prod').textContent = 'Adicionar produto';
+  document.getElementById('cat-field').style.display   = '';
+  document.getElementById('cat-divider').style.display = '';
   document.getElementById('cat-select').value = '';
   document.getElementById('np-nome').value  = '';
   document.getElementById('np-desc').value  = '';
@@ -573,23 +584,79 @@ function abrirModalProd() {
   document.getElementById('np-coord').value = '';
   document.getElementById('overlay-prod').classList.add('open');
 }
-function fecharModalProd() { document.getElementById('overlay-prod').classList.remove('open'); }
+
+function editarProduto(prodId) {
+  const p = meusProdutos.find(x => x.id === prodId);
+  if (!p) return;
+  editProdId = prodId;
+  document.getElementById('m-title-prod').textContent = 'Editar produto';
+  document.getElementById('btn-salvar-prod').textContent = 'Salvar alterações';
+  // No modo edição não faz sentido escolher do catálogo
+  document.getElementById('cat-field').style.display   = 'none';
+  document.getElementById('cat-divider').style.display = 'none';
+  document.getElementById('cat-select').value = '';
+  document.getElementById('np-nome').value  = p.nome || '';
+  document.getElementById('np-desc').value  = p.descricao || '';
+  document.getElementById('np-tipo').value  = p.tipo || 'painel_publico';
+  document.getElementById('np-coord').value = p.coordenacao_id || '';
+  document.getElementById('overlay-prod').classList.add('open');
+}
+
+function fecharModalProd() {
+  editProdId = null;
+  document.getElementById('overlay-prod').classList.remove('open');
+}
 
 async function salvarProduto() {
   const nome = document.getElementById('np-nome').value.trim();
   if (!nome) { alert('Digite o nome do produto.'); return; }
+  const campos = {
+    nome,
+    tipo:           document.getElementById('np-tipo').value,
+    descricao:      document.getElementById('np-desc').value.trim(),
+    coordenacao_id: document.getElementById('np-coord').value,
+    gerente_id:     gerenteId,
+  };
   try {
-    const [novo] = await dbCriarProduto({
-      nome,
-      tipo:           document.getElementById('np-tipo').value,
-      descricao:      document.getElementById('np-desc').value.trim(),
-      coordenacao_id: document.getElementById('np-coord').value,
-      gerente_id:     gerenteId,
-    });
-    meusProdutos.push(novo);
+    if (editProdId) {
+      // Edição de produto existente
+      if (typeof dbAtualizarProduto !== 'function') {
+        alert('Função dbAtualizarProduto não encontrada em assets/db.js. Adicione-a seguindo o padrão de dbAtualizarAcao.');
+        return;
+      }
+      await dbAtualizarProduto(editProdId, campos);
+      const idx = meusProdutos.findIndex(p => p.id === editProdId);
+      if (idx >= 0) meusProdutos[idx] = { ...meusProdutos[idx], ...campos };
+      // Atualiza header se o produto editado estiver aberto
+      if (produtoAtual && produtoAtual.id === editProdId) produtoAtual = meusProdutos[idx];
+    } else {
+      const [novo] = await dbCriarProduto(campos);
+      meusProdutos.push(novo);
+    }
     renderProdutos();
     fecharModalProd();
-  } catch(e) { alert('Erro ao criar produto: '+e.message); }
+  } catch(e) { alert('Erro ao salvar produto: '+e.message); }
+}
+
+async function removerProduto(prodId, nome) {
+  if (!confirm(`Excluir o produto "${nome}"?\n\nTodas as ações vinculadas a ele também serão removidas. Esta operação não pode ser desfeita.`)) return;
+  try {
+    if (typeof dbRemoverProduto !== 'function') {
+      alert('Função dbRemoverProduto não encontrada em assets/db.js. Adicione-a seguindo o padrão de dbRemoverAcao.');
+      return;
+    }
+    // Remove primeiro as ações vinculadas ao produto
+    try {
+      const acoesProd = await dbListarAcoes({ gerente_id: gerenteId, produto_id: prodId });
+      for (const a of acoesProd) {
+        try { await dbRemoverAcao(a.id); } catch(e) {}
+      }
+    } catch(e) {}
+    await dbRemoverProduto(prodId);
+    meusProdutos = meusProdutos.filter(p => p.id !== prodId);
+    if (produtoAtual && produtoAtual.id === prodId) { produtoAtual = null; show('produtos'); }
+    renderProdutos();
+  } catch(e) { alert('Erro ao excluir produto: '+e.message); }
 }
 
 // ============================================================
