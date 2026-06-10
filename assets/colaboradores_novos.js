@@ -80,6 +80,7 @@ const NOVOS_COLABORADORES = [
   { nome: 'Vitoria Maria Silva Dos Santos',                   area: 'GM/SEGAPE/MEC',          vinculo: 'Bolsista',     sala: 'ED. SEDE, 8º Andar, Sala 813',          nivel: 'bolsista' },
   { nome: 'Lucas de Mattos Moura Fernandes',                  area: 'GM/DMAPE/SEGAPE',        vinculo: 'Servidor',     sala: 'ED. SEDE, 8º Andar, Sala 813',          nivel: 'servidor' },
 ];
+  { nome: 'André Guimarães',                  area: 'GM/DMAPE/SEGAPE',        vinculo: 'Servidor',     sala: 'ED. SEDE, 8º Andar, Sala 813',          nivel: 'servidor' },
 
 // Mescla ao EQUIPE (sem duplicar nomes já existentes em dados.js)
 if (typeof EQUIPE !== 'undefined' && Array.isArray(EQUIPE)) {
