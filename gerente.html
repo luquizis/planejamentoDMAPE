@@ -133,8 +133,13 @@ footer{padding:.65rem 2rem;font-size:.68rem;color:rgba(0,0,0,.28);text-align:cen
 
   <!-- ETAPA 1: Produtos do gerente -->
   <div id="etapa-produtos" style="display:none">
-    <div class="etapa-titulo">Meus produtos</div>
-    <div class="etapa-sub">Selecione um produto para gerenciar as ações, edite ou exclua seus produtos, ou adicione um novo.</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem">
+      <div>
+        <div class="etapa-titulo">Meus produtos</div>
+        <div class="etapa-sub">Selecione um produto para gerenciar as ações, edite ou exclua seus produtos, ou adicione um novo.</div>
+      </div>
+      <button class="btn btn-pdf" onclick="gerarPDFGerente()">📄 Relatório PDF do gerente</button>
+    </div>
     <div class="prod-grid" id="prod-grid"></div>
   </div>
 
@@ -784,6 +789,59 @@ async function removerAcao(id) {
 // ============================================================
 // PDF
 // ============================================================
+async function gerarPDFGerente() {
+  if (!gerenteId) { alert('Selecione um gerente.'); return; }
+  if (!meusProdutos.length) { alert('Nenhum produto cadastrado para este gerente.'); return; }
+  const gerente = gerentes.find(g => g.id === gerenteId);
+  show('loading');
+  try {
+    // Carrega as ações de todos os produtos do gerente
+    const blocos = [];
+    let totalAcoes = 0, totalHoras = 0, somaPct = 0, totalConcluidas = 0;
+    for (const p of meusProdutos) {
+      let acoesProd = [];
+      try { acoesProd = await dbListarAcoes({ gerente_id: gerenteId, produto_id: p.id }); } catch(e) {}
+      totalAcoes += acoesProd.length;
+      totalHoras += acoesProd.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+      somaPct    += acoesProd.reduce((s,a)=>s+(a.percentual||0),0);
+      totalConcluidas += acoesProd.filter(a=>a.status==='concluido').length;
+      blocos.push({ produto: p, acoes: acoesProd });
+    }
+    const avancoMedio = totalAcoes ? Math.round(somaPct/totalAcoes) : 0;
+
+    const secoes = blocos.map(({produto: p, acoes: acoesProd}) => {
+      const tipo = TIPOS_PRODUTO[p.tipo] || {label: p.tipo};
+      const hProd = acoesProd.reduce((s,a)=>s+(a.horas_estimadas||0),0);
+      const linhas = acoesProd.length
+        ? acoesProd.map(a => {
+            const colabs = (a.executores_ids||[]).map(id=>colaboradores.find(c=>c.id===id)?.nome.split(' ').slice(0,2).join(' ')).filter(Boolean);
+            return `<tr>
+              <td>${a.titulo}${a.observacao?'<br><small style="color:#C8922A">Obs: '+a.observacao+'</small>':''}</td>
+              <td>${colabs.join(', ')||'—'}</td>
+              <td>${FASES[a.fase]?.label||a.fase}</td>
+              <td>${COMPLEXIDADE[a.complexidade]?.label||a.complexidade}</td>
+              <td>${fmtData(a.data_inicio)} → ${fmtData(a.data_fim)}</td>
+              <td>${a.horas_estimadas||0}h</td>
+              <td>${a.percentual||0}%</td>
+              <td>${STATUS_LABELS[a.status]?.label||a.status}</td>
+            </tr>`;
+          }).join('')
+        : '<tr><td colspan="8" style="color:#888">Nenhuma ação cadastrada</td></tr>';
+      return `
+        <h2 style="margin-top:1.4rem">${p.nome} <small style="font-weight:normal;color:#666">· ${tipo.label} · ${acoesProd.length} ação(ões) · ${hProd}h</small></h2>
+        ${p.descricao?`<p class="sub">${p.descricao}</p>`:''}
+        <table><thead><tr><th>Ação</th><th>Colaboradores</th><th>Fase</th><th>Cx</th><th>Período</th><th>Horas</th><th>Avanço</th><th>Status</th></tr></thead>
+        <tbody>${linhas}</tbody></table>`;
+    }).join('');
+
+    gerarPDF(`Relatório do Gerente — ${gerente?.nome||'—'}`, `
+      <h1>Relatório de Planejamento — ${gerente?.nome||'—'}</h1>
+      <p class="sub">${gerente?.area?gerente.area+' · ':''}${meusProdutos.length} produto(s) · ${totalAcoes} ações · ${totalHoras}h estimadas · ${totalConcluidas} concluída(s) · avanço médio ${avancoMedio}%</p>
+      ${secoes}`);
+  } catch(e) { alert('Erro ao gerar relatório: '+e.message); }
+  show(produtoAtual ? 'acoes' : 'produtos');
+}
+
 function gerarPDFProduto() {
   if (!acoes.length) { alert('Nenhuma ação para exportar.'); return; }
   const gerente = gerentes.find(g=>g.id===gerenteId);
