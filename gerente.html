@@ -809,6 +809,63 @@ async function gerarPDFGerente() {
     }
     const avancoMedio = totalAcoes ? Math.round(somaPct/totalAcoes) : 0;
 
+    // ---------- DASHBOARD ----------
+    const todasAcoes = blocos.flatMap(b => b.acoes);
+    const pce = '-webkit-print-color-adjust:exact;print-color-adjust:exact';
+    const kpi = (n,l) => `<div style="flex:1;min-width:105px;border:1px solid #ddd;border-radius:8px;padding:10px 8px;text-align:center;background:#FAFAF8;${pce}">
+      <div style="font-size:1.35rem;font-weight:800;color:#1B3A6B">${n}</div>
+      <div style="font-size:.6rem;color:#666;text-transform:uppercase;letter-spacing:.04em">${l}</div></div>`;
+    const barRow = (label, val, max, cor, sufixo='') => {
+      const w = max ? Math.max(2, Math.round(val/max*100)) : 0;
+      return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+        <div style="width:190px;font-size:.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${label}</div>
+        <div style="flex:1;background:#ECECE8;border-radius:4px;height:12px;${pce}">
+          <div style="width:${w}%;height:12px;border-radius:4px;background:${cor};${pce}"></div></div>
+        <div style="width:62px;font-size:.72rem;text-align:right;font-weight:600;color:#1B3A6B">${val}${sufixo}</div></div>`;
+    };
+
+    // Distribuição por status
+    const porStatus = {};
+    todasAcoes.forEach(a => { porStatus[a.status] = (porStatus[a.status]||0)+1; });
+    const maxStatus = Math.max(1, ...Object.values(porStatus));
+    const barsStatus = Object.entries(porStatus)
+      .sort((a,b)=>b[1]-a[1])
+      .map(([k,v]) => barRow(STATUS_LABELS[k]?.label||k, v, maxStatus, STATUS_LABELS[k]?.cor||'#2E5CA8'))
+      .join('') || '<div style="font-size:.72rem;color:#888">Sem ações</div>';
+
+    // Distribuição por fase
+    const porFase = {};
+    todasAcoes.forEach(a => { porFase[a.fase] = (porFase[a.fase]||0)+1; });
+    const maxFase = Math.max(1, ...Object.values(porFase));
+    const barsFase = Object.entries(porFase)
+      .sort((a,b)=>b[1]-a[1])
+      .map(([k,v]) => barRow(FASES[k]?.label||k, v, maxFase, FASES[k]?.cor||'#5B8DD9'))
+      .join('') || '<div style="font-size:.72rem;color:#888">Sem ações</div>';
+
+    // Horas e avanço por produto
+    const horasPorProd = blocos.map(b => ({ nome: b.produto.nome, h: b.acoes.reduce((s,a)=>s+(a.horas_estimadas||0),0),
+      pct: b.acoes.length ? Math.round(b.acoes.reduce((s,a)=>s+(a.percentual||0),0)/b.acoes.length) : 0 }));
+    const maxH = Math.max(1, ...horasPorProd.map(x=>x.h));
+    const barsHoras  = horasPorProd.map(x => barRow(x.nome, x.h, maxH, '#2E5CA8', 'h')).join('');
+    const barsAvanco = horasPorProd.map(x => barRow(x.nome, x.pct, 100, x.pct>=100?'#1D7A55':(x.pct>=50?'#5B8DD9':'#C8922A'), '%')).join('');
+
+    const chartBox = (titulo, conteudo) => `<div style="flex:1;min-width:300px;border:1px solid #ddd;border-radius:8px;padding:10px 12px">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;color:#5F5F5F;margin-bottom:6px;letter-spacing:.04em">${titulo}</div>${conteudo}</div>`;
+
+    const dashboard = `
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 10px">
+        ${kpi(meusProdutos.length,'Produtos')}${kpi(totalAcoes,'Ações')}${kpi(totalHoras+'h','Horas estimadas')}${kpi(totalConcluidas,'Concluídas')}${kpi(avancoMedio+'%','Avanço médio')}
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+        ${chartBox('Ações por status', barsStatus)}
+        ${chartBox('Ações por fase', barsFase)}
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+        ${chartBox('Horas por produto', barsHoras)}
+        ${chartBox('Avanço por produto', barsAvanco)}
+      </div>`;
+    // ---------- FIM DASHBOARD ----------
+
     const secoes = blocos.map(({produto: p, acoes: acoesProd}) => {
       const tipo = TIPOS_PRODUTO[p.tipo] || {label: p.tipo};
       const hProd = acoesProd.reduce((s,a)=>s+(a.horas_estimadas||0),0);
@@ -836,7 +893,8 @@ async function gerarPDFGerente() {
 
     gerarPDF(`Relatório do Gerente — ${gerente?.nome||'—'}`, `
       <h1>Relatório de Planejamento — ${gerente?.nome||'—'}</h1>
-      <p class="sub">${gerente?.area?gerente.area+' · ':''}${meusProdutos.length} produto(s) · ${totalAcoes} ações · ${totalHoras}h estimadas · ${totalConcluidas} concluída(s) · avanço médio ${avancoMedio}%</p>
+      <p class="sub">${gerente?.area?gerente.area+' · ':''}Gerado em ${fmtData(new Date().toISOString().split('T')[0])}</p>
+      ${dashboard}
       ${secoes}`);
   } catch(e) { alert('Erro ao gerar relatório: '+e.message); }
   show(produtoAtual ? 'acoes' : 'produtos');
